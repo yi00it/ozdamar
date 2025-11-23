@@ -18,16 +18,16 @@
     --scanline-light: rgba(18, 16, 16, 0);
   }
 
-  /* Light theme */
+  /* Light theme - Vintage Printout */
   .light-theme {
-    --primary-color: #33ff00;
-    --secondary-color: #2d7000;
+    --primary-color: #000000;
+    --secondary-color: #404040;
     --bg-color: #f5f5dc;
-    --text-color: #0d4d00;
-    --text-glow: 0 0 4px rgba(13, 77, 0, 0.5);
-    --bg-dim: rgba(45, 112, 0, 0.08);
-    --code-bg: rgba(45, 112, 0, 0.15);
-    --scanline-dark: rgba(255, 255, 255, 0.15);
+    --text-color: #000000;
+    --text-glow: none;
+    --bg-dim: rgba(0, 0, 0, 0.03);
+    --code-bg: #e0e0e0;
+    --scanline-dark: rgba(0, 0, 0, 0.02);
     --scanline-light: rgba(245, 245, 220, 0);
   }
 
@@ -83,6 +83,11 @@
     animation: flicker 0.15s infinite;
   }
 
+  /* Disable flicker in light mode (paper doesn't flicker) */
+  .light-theme .screen-flicker {
+    animation: none;
+  }
+
   @keyframes flicker {
     0% { opacity: 0.97; }
     50% { opacity: 1; }
@@ -132,6 +137,10 @@
     background-color: var(--primary-color);
     color: var(--bg-color);
     text-decoration: none;
+  }
+
+  /* Only add glow on hover in dark mode */
+  :root a:hover {
     box-shadow: 0 0 8px var(--primary-color);
   }
 
