@@ -63,14 +63,14 @@ export class SiteGenerator {
 
       return `
         <div class="border border-green p-6 hover:bg-dim transition-colors group">
-          <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4">
+          <div class="flex justify-between items-start gap-4 mb-4">
+            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0">
               <a href="${this.url(`/projects/${project.slug}/`)}">${project.title.toUpperCase().replace(/\s+/g, '_')}</a>
             </h3>
-            <span class="text-xs border border-green px-2 py-0.5 text-dim">${statusBadge}</span>
+            <span class="text-xs border border-green px-2 py-0.5 text-dim flex-shrink-0">${statusBadge}</span>
           </div>
           <p class="text-sm mb-6 leading-relaxed opacity-90">${project.description}</p>
-          <div class="flex gap-3 text-xs text-dim font-mono">
+          <div class="flex gap-3 text-xs text-dim font-mono flex-wrap">
             ${project.tags ? project.tags.map(tag => `<span>> ${tag.toUpperCase()}</span>`).join('') : ''}
           </div>
         </div>
@@ -247,14 +247,14 @@ export class SiteGenerator {
 
       return `
         <div class="border border-green p-6 hover:bg-dim transition-colors group">
-          <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4">
+          <div class="flex justify-between items-start gap-4 mb-4">
+            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0">
               <a href="${this.url(`/projects/${project.slug}/`)}">${project.title.toUpperCase().replace(/\s+/g, '_')}</a>
             </h3>
-            <span class="text-xs border border-green px-2 py-0.5 text-dim">${statusBadge}</span>
+            <span class="text-xs border border-green px-2 py-0.5 text-dim flex-shrink-0">${statusBadge}</span>
           </div>
           <p class="text-sm mb-6 leading-relaxed opacity-90">${project.description}</p>
-          <div class="flex gap-3 text-xs text-dim font-mono">
+          <div class="flex gap-3 text-xs text-dim font-mono flex-wrap">
             ${project.tags ? project.tags.map(tag => `<span>> ${tag.toUpperCase()}</span>`).join('') : ''}
           </div>
         </div>
