@@ -18,7 +18,8 @@ const config: SiteConfig = {
   siteName: 'Ozdamar',
   siteUrl: 'https://yi00it.github.io/ozdamar',
   siteDescription: 'Personal website and blog',
-  intro: 'Welcome to my personal website. I write about technology, software development, and share my projects.'
+  intro: 'Welcome to my personal website. I write about technology, software development, and share my projects.',
+  basePath: '/ozdamar'
 };
 
 function cleanDist(): void {
