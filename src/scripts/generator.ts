@@ -48,7 +48,7 @@ export class SiteGenerator {
       ? '<div class="flex gap-2 flex-wrap">' +
         post.tags.map(tag => {
           const slug = normalizeTagSlug(tag);
-          return `<a href="${this.url(`/tag/${slug}/`)}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">${tag}</a>`;
+          return `<a href="${this.url(`/tag/${slug}/`)}" class="px-3 py-1 bg-neutral-50 text-neutral-600 text-xs font-medium rounded-full border border-neutral-100 hover:border-neutral-300 transition-colors">${tag}</a>`;
         }).join('') +
         '</div>'
       : '';
@@ -91,16 +91,19 @@ export class SiteGenerator {
         const year = postDate.getFullYear();
         const month = String(postDate.getMonth() + 1).padStart(2, '0');
         const url = this.url(`/blog/${year}/${month}/${post.slug}/`);
+        const dateFormatted = postDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
 
         return `
-          <article class="border-b border-gray-200 pb-6">
-            <h2 class="text-xl font-bold mb-2">
-              <a href="${url}">${post.title}</a>
-            </h2>
-            <time datetime="${postDate.toISOString()}" class="text-gray-600 text-sm">
-              ${postDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </time>
-            ${post.description ? `<p class="mt-2 text-gray-700">${post.description}</p>` : ''}
+          <article class="fade-in-section group cursor-pointer">
+            <a href="${url}" class="block">
+              <div class="flex items-baseline justify-between mb-2">
+                <h3 class="text-lg font-medium text-neutral-900 group-hover:text-blue-600 transition-colors">
+                  ${post.title}
+                </h3>
+                <span class="text-sm text-neutral-400 font-mono">${dateFormatted}</span>
+              </div>
+              ${post.description ? `<p class="text-neutral-500 text-sm leading-relaxed line-clamp-2">${post.description}</p>` : ''}
+            </a>
           </article>
         `;
       }).join('');
@@ -110,12 +113,12 @@ export class SiteGenerator {
         const links = [];
         if (page > 1) {
           const prevUrl = page === 2 ? this.url('/blog/') : this.url(`/blog/page/${page - 1}/`);
-          links.push(`<a href="${prevUrl}" class="px-4 py-2 border rounded hover:bg-gray-50">Previous</a>`);
+          links.push(`<a href="${prevUrl}" class="px-6 py-3 border border-neutral-200 rounded-full hover:border-neutral-400 text-neutral-600 transition-all text-sm font-medium">Previous</a>`);
         }
         if (page < totalPages) {
-          links.push(`<a href="${this.url(`/blog/page/${page + 1}/`)}" class="px-4 py-2 border rounded hover:bg-gray-50">Next</a>`);
+          links.push(`<a href="${this.url(`/blog/page/${page + 1}/`)}" class="px-6 py-3 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-all text-sm font-medium">Next</a>`);
         }
-        paginationHtml = `<div class="flex gap-4 justify-center mt-8">${links.join('')}</div>`;
+        paginationHtml = `<div class="flex gap-4 justify-center mt-12">${links.join('')}</div>`;
       }
 
       const indexContent = this.templates.render('blog-index', {
@@ -144,13 +147,13 @@ export class SiteGenerator {
       ? '<div class="flex gap-2 flex-wrap mb-4">' +
         project.tags.map(tag => {
           const slug = normalizeTagSlug(tag);
-          return `<a href="${this.url(`/tag/${slug}/`)}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">${tag}</a>`;
+          return `<a href="${this.url(`/tag/${slug}/`)}" class="px-3 py-1 bg-neutral-50 text-neutral-600 text-xs font-medium rounded-full border border-neutral-100 hover:border-neutral-300 transition-colors">${tag}</a>`;
         }).join('') +
         '</div>'
       : '';
 
     const demoLink = project.demo
-      ? `<a href="${project.demo}" class="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">View Demo</a>`
+      ? `<a href="${project.demo}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 border border-neutral-200 text-neutral-600 rounded-full hover:border-neutral-400 transition-all text-sm font-medium">View Demo</a>`
       : '';
 
     const projectContent = this.templates.render('project', {
@@ -184,18 +187,24 @@ export class SiteGenerator {
       return a.title.localeCompare(b.title);
     });
 
-    const projectsListHtml = sortedProjects.map(project => {
+    const projectsListHtml = sortedProjects.map((project, index) => {
+      const isLarge = index === 0 && sortedProjects.length > 1;
+      const cardClass = isLarge ? 'md:col-span-2' : '';
+
       return `
-        <article class="border border-gray-200 p-6 rounded hover:shadow-lg transition-shadow">
-          <h2 class="text-xl font-bold mb-2">
-            <a href="${this.url(`/projects/${project.slug}/`)}">${project.title}</a>
-          </h2>
-          <p class="text-gray-700 mb-4">${project.description}</p>
-          <div class="flex gap-3">
-            <a href="${project.github}" class="text-sm text-blue-600 hover:text-blue-800">GitHub →</a>
-            ${project.demo ? `<a href="${project.demo}" class="text-sm text-blue-600 hover:text-blue-800">Demo →</a>` : ''}
+        <a href="${this.url(`/projects/${project.slug}/`)}" class="fade-in-section group block ${cardClass} relative bg-white border border-neutral-100 rounded-2xl p-8 hover:shadow-xl hover:shadow-neutral-100/50 transition-all duration-500">
+          <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-semibold text-neutral-900">${project.title}</h3>
+            <div class="w-10 h-10 rounded-full bg-neutral-50 flex items-center justify-center group-hover:bg-neutral-900 group-hover:text-white transition-colors flex-shrink-0 ml-4">
+              <span class="text-lg">→</span>
+            </div>
           </div>
-        </article>
+          <p class="text-neutral-500 leading-relaxed mb-6">${project.description}</p>
+          <div class="flex gap-3 text-sm">
+            <span class="text-neutral-400 hover:text-neutral-600">GitHub →</span>
+            ${project.demo ? `<span class="text-neutral-400 hover:text-neutral-600">Demo →</span>` : ''}
+          </div>
+        </a>
       `;
     }).join('');
 

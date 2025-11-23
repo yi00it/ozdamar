@@ -1,16 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles */
-body {
-  @apply bg-white text-gray-900;
+@layer base {
+  :root {
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #FAFAFA;
+    color: #171717;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background-color: #171717;
+    color: #FAFAFA;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #e5e5e5;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #d4d4d4;
+  }
 }
 
-a {
-  @apply text-blue-600 hover:text-blue-800;
-}
+@layer components {
+  .serif {
+    font-family: 'Playfair Display', serif;
+  }
 
-.container {
-  @apply max-w-4xl mx-auto px-4;
+  .container {
+    @apply max-w-4xl mx-auto px-6;
+  }
+
+  /* Subtle Fade In Animation */
+  .fade-in-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
+    will-change: opacity, transform;
+  }
+
+  .fade-in-section.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Image hover zoom effect */
+  .img-zoom-container {
+    overflow: hidden;
+  }
+  .img-zoom {
+    transition: transform 0.7s var(--ease-out-expo);
+  }
+  .group:hover .img-zoom {
+    transform: scale(1.05);
+  }
+
+  /* Link Underline Animation */
+  .hover-underline {
+    position: relative;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .hover-underline::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    background-color: currentColor;
+    transform-origin: bottom right;
+    transition: transform 0.4s var(--ease-out-expo);
+  }
+  .hover-underline:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
 }
