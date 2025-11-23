@@ -36,13 +36,13 @@ export class SiteGenerator {
       const dateFormatted = postDate.toISOString().split('T')[0];
 
       return `
-        <article class="group cursor-pointer">
-          <a href="${url}" class="block">
+        <article>
+          <a href="${url}" class="block group">
             <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-1">
               <span class="text-dim text-xs">[${dateFormatted}]</span>
-              <h3 class="text-lg font-bold group-hover:bg-green-400 group-hover:text-black inline-block transition-colors px-1 -ml-1">${post.title}</h3>
+              <h3 class="text-lg font-bold group-hover:bg-[#33ff00] group-hover:text-black inline-block transition-colors px-1 -ml-1">${post.title}</h3>
             </div>
-            ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24 border-l-2 border-transparent group-hover:border-green-500 transition-all">${post.description}</p>` : ''}
+            ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24 border-l-2 border-transparent group-hover:border-[#33ff00] transition-all">${post.description}</p>` : ''}
           </a>
         </article>
       `;
@@ -152,8 +152,8 @@ export class SiteGenerator {
         const dateFormatted = postDate.toISOString().split('T')[0];
 
         return `
-          <article class="group cursor-pointer">
-            <a href="${url}" class="block">
+          <article>
+            <a href="${url}" class="block group">
               <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-1">
                 <span class="text-dim text-xs">[${dateFormatted}]</span>
                 <h3 class="text-lg font-bold inline-block transition-colors px-1 -ml-1 group-hover:bg-[#33ff00] group-hover:text-black">${post.title}</h3>
