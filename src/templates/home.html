@@ -8,8 +8,9 @@
     <h1 class="text-3xl md:text-5xl font-bold mb-6 glow-text tracking-tight">
       <span id="typing-text"></span><span class="cursor-blink"></span>
     </h1>
-    <div id="intro-subtext" class="opacity-0 transition-opacity duration-1000 space-y-4 text-lg">
-      <p>{{intro}}</p>
+    <div id="intro-subtext" class="opacity-0 transition-opacity duration-1000 space-y-4">
+      <p class="text-lg">{{intro}}</p>
+      <p class="text-dim text-base">I write about tech, building products, and my journey from managing sites to crafting software.</p>
     </div>
   </div>
 </section>
@@ -68,7 +69,7 @@
 
 <script>
   // Typing Effect
-  const textToType = "Hello, World. I'm Yigit.";
+  const textToType = "Hey, I'm Yigit.";
   const typeSpeed = 100;
   let charIndex = 0;
   const typingElement = document.getElementById('typing-text');

@@ -18,7 +18,7 @@ const config: SiteConfig = {
   siteName: 'Ozdamar',
   siteUrl: 'https://yi00it.github.io/ozdamar',
   siteDescription: 'Personal website and blog',
-  intro: 'Welcome to my personal website. I write about technology, software development, and share my projects.',
+  intro: "I've spent my career in construction project management, and now I'm building my own construction software—powered by the insane productivity of the AI era.",
   basePath: '/ozdamar'
 };
 
