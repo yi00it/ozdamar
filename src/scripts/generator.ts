@@ -8,6 +8,7 @@ export interface SiteConfig {
   siteUrl: string;
   siteDescription: string;
   intro: string;
+  basePath: string;
 }
 
 export class SiteGenerator {
@@ -16,6 +17,10 @@ export class SiteGenerator {
     private config: SiteConfig,
     private distDir: string
   ) {}
+
+  private url(path: string): string {
+    return `${this.config.basePath}${path}`;
+  }
 
   generateHome(): void {
     const homeContent = this.templates.render('home', {
@@ -27,7 +32,8 @@ export class SiteGenerator {
       page_title: this.config.siteName,
       page_description: this.config.siteDescription,
       site_name: this.config.siteName,
-      current_year: new Date().getFullYear().toString()
+      current_year: new Date().getFullYear().toString(),
+      base_path: this.config.basePath
     });
 
     this.writeFile(path.join(this.distDir, 'index.html'), html);
@@ -42,7 +48,7 @@ export class SiteGenerator {
       ? '<div class="flex gap-2 flex-wrap">' +
         post.tags.map(tag => {
           const slug = normalizeTagSlug(tag);
-          return `<a href="/tag/${slug}/" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">${tag}</a>`;
+          return `<a href="${this.url(`/tag/${slug}/`)}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">${tag}</a>`;
         }).join('') +
         '</div>'
       : '';
@@ -59,7 +65,8 @@ export class SiteGenerator {
       page_title: `${post.title} - ${this.config.siteName}`,
       page_description: post.description || post.title,
       site_name: this.config.siteName,
-      current_year: new Date().getFullYear().toString()
+      current_year: new Date().getFullYear().toString(),
+      base_path: this.config.basePath
     });
 
     const outputPath = path.join(this.distDir, 'blog', String(year), month, post.slug, 'index.html');
@@ -83,7 +90,7 @@ export class SiteGenerator {
         const postDate = new Date(post.date);
         const year = postDate.getFullYear();
         const month = String(postDate.getMonth() + 1).padStart(2, '0');
-        const url = `/blog/${year}/${month}/${post.slug}/`;
+        const url = this.url(`/blog/${year}/${month}/${post.slug}/`);
 
         return `
           <article class="border-b border-gray-200 pb-6">
@@ -102,11 +109,11 @@ export class SiteGenerator {
       if (totalPages > 1) {
         const links = [];
         if (page > 1) {
-          const prevUrl = page === 2 ? '/blog/' : `/blog/page/${page - 1}/`;
+          const prevUrl = page === 2 ? this.url('/blog/') : this.url(`/blog/page/${page - 1}/`);
           links.push(`<a href="${prevUrl}" class="px-4 py-2 border rounded hover:bg-gray-50">Previous</a>`);
         }
         if (page < totalPages) {
-          links.push(`<a href="/blog/page/${page + 1}/" class="px-4 py-2 border rounded hover:bg-gray-50">Next</a>`);
+          links.push(`<a href="${this.url(`/blog/page/${page + 1}/`)}" class="px-4 py-2 border rounded hover:bg-gray-50">Next</a>`);
         }
         paginationHtml = `<div class="flex gap-4 justify-center mt-8">${links.join('')}</div>`;
       }
@@ -120,7 +127,8 @@ export class SiteGenerator {
         page_title: page === 1 ? `Blog - ${this.config.siteName}` : `Blog (Page ${page}) - ${this.config.siteName}`,
         page_description: 'Blog posts',
         site_name: this.config.siteName,
-        current_year: new Date().getFullYear().toString()
+        current_year: new Date().getFullYear().toString(),
+        base_path: this.config.basePath
       });
 
       const outputPath = page === 1
@@ -136,7 +144,7 @@ export class SiteGenerator {
       ? '<div class="flex gap-2 flex-wrap mb-4">' +
         project.tags.map(tag => {
           const slug = normalizeTagSlug(tag);
-          return `<a href="/tag/${slug}/" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">${tag}</a>`;
+          return `<a href="${this.url(`/tag/${slug}/`)}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">${tag}</a>`;
         }).join('') +
         '</div>'
       : '';
@@ -158,7 +166,8 @@ export class SiteGenerator {
       page_title: `${project.title} - ${this.config.siteName}`,
       page_description: project.description,
       site_name: this.config.siteName,
-      current_year: new Date().getFullYear().toString()
+      current_year: new Date().getFullYear().toString(),
+      base_path: this.config.basePath
     });
 
     const outputPath = path.join(this.distDir, 'projects', project.slug, 'index.html');
@@ -179,7 +188,7 @@ export class SiteGenerator {
       return `
         <article class="border border-gray-200 p-6 rounded hover:shadow-lg transition-shadow">
           <h2 class="text-xl font-bold mb-2">
-            <a href="/projects/${project.slug}/">${project.title}</a>
+            <a href="${this.url(`/projects/${project.slug}/`)}">${project.title}</a>
           </h2>
           <p class="text-gray-700 mb-4">${project.description}</p>
           <div class="flex gap-3">
@@ -198,7 +207,8 @@ export class SiteGenerator {
       page_title: `Projects - ${this.config.siteName}`,
       page_description: 'My projects',
       site_name: this.config.siteName,
-      current_year: new Date().getFullYear().toString()
+      current_year: new Date().getFullYear().toString(),
+      base_path: this.config.basePath
     });
 
     this.writeFile(path.join(this.distDir, 'projects', 'index.html'), html);
@@ -251,7 +261,7 @@ export class SiteGenerator {
           const postDate = new Date(post.date);
           const year = postDate.getFullYear();
           const month = String(postDate.getMonth() + 1).padStart(2, '0');
-          const url = `/blog/${year}/${month}/${post.slug}/`;
+          const url = this.url(`/blog/${year}/${month}/${post.slug}/`);
 
           return `
             <article class="mb-4">
@@ -279,7 +289,7 @@ export class SiteGenerator {
           return `
             <article class="mb-4">
               <h3 class="text-lg font-semibold">
-                <a href="/projects/${project.slug}/">${project.title}</a>
+                <a href="${this.url(`/projects/${project.slug}/`)}">${project.title}</a>
               </h3>
               <p class="text-gray-700">${project.description}</p>
             </article>
@@ -304,7 +314,8 @@ export class SiteGenerator {
         page_title: `${data.displayName} - ${this.config.siteName}`,
         page_description: `Posts and projects tagged with ${data.displayName}`,
         site_name: this.config.siteName,
-        current_year: new Date().getFullYear().toString()
+        current_year: new Date().getFullYear().toString(),
+        base_path: this.config.basePath
       });
 
       this.writeFile(path.join(this.distDir, 'tag', slug, 'index.html'), html);
