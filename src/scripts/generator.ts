@@ -116,7 +116,8 @@ export class SiteGenerator {
       date_iso: postDate.toISOString(),
       date_formatted: postDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       tags_html: tagsHtml,
-      content: post.content
+      content: post.content,
+      base_path: this.config.basePath
     });
 
     const html = this.templates.renderLayout(postContent, {
@@ -218,7 +219,8 @@ export class SiteGenerator {
       github: project.github,
       demo_link: demoLink,
       tags_html: tagsHtml,
-      content: project.content
+      content: project.content,
+      base_path: this.config.basePath
     });
 
     const html = this.templates.renderLayout(projectContent, {
