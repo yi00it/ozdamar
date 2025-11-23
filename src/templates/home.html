@@ -1,9 +1,47 @@
-<!-- Hero Section -->
-<section class="fade-in-section mb-32">
-  <h1 class="text-4xl md:text-6xl font-medium leading-[1.1] tracking-tight text-neutral-900 mb-8">
-    Building digital products that <span class="serif italic text-neutral-500">feel</span> as good as they look.
-  </h1>
-  <div class="max-w-2xl text-lg md:text-xl text-neutral-500 leading-relaxed space-y-6">
-    <p>{{intro}}</p>
+<!-- Hero / Intro -->
+<section class="mb-24 min-h-[200px]">
+  <div class="flex items-start gap-4 mb-4">
+    <span class="text-dim select-none">root@ozdamar:~$</span>
+    <div class="max-w-2xl">
+      <h1 class="text-3xl md:text-5xl font-bold mb-6 glow-text tracking-tight">
+        <span id="typing-text"></span><span class="cursor-blink"></span>
+      </h1>
+      <div id="intro-subtext" class="opacity-0 transition-opacity duration-1000 space-y-4 text-lg">
+        <p>{{intro}}</p>
+      </div>
+    </div>
   </div>
 </section>
+
+<!-- Navigation Command Strip -->
+<nav id="nav-strip" class="opacity-0 transition-opacity duration-1000 delay-500 mb-20 border-y border-green py-4">
+  <ul class="flex flex-wrap gap-8 text-sm md:text-base">
+    <li><a href="{{base_path}}/projects/" class="px-2 py-1">[ ./projects ]</a></li>
+    <li><a href="{{base_path}}/blog/" class="px-2 py-1">[ ./logs ]</a></li>
+  </ul>
+</nav>
+
+<script>
+  // Typing Effect
+  const textToType = "Hello, World. I'm Yigit.";
+  const typeSpeed = 100;
+  let charIndex = 0;
+  const typingElement = document.getElementById('typing-text');
+  const subtextElement = document.getElementById('intro-subtext');
+  const navElement = document.getElementById('nav-strip');
+
+  function typeWriter() {
+    if (charIndex < textToType.length) {
+      typingElement.innerHTML += textToType.charAt(charIndex);
+      charIndex++;
+      setTimeout(typeWriter, typeSpeed);
+    } else {
+      setTimeout(() => {
+        subtextElement.classList.remove('opacity-0');
+        navElement.classList.remove('opacity-0');
+      }, 500);
+    }
+  }
+
+  window.addEventListener('load', typeWriter);
+</script>
