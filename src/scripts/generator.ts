@@ -22,10 +22,67 @@ export class SiteGenerator {
     return `${this.config.basePath}${path}`;
   }
 
-  generateHome(): void {
+  generateHome(posts: BlogPost[], projects: Project[]): void {
+    // Get recent posts (limit to 3)
+    const recentPosts = [...posts]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 3);
+
+    const postsListHtml = recentPosts.map(post => {
+      const postDate = new Date(post.date);
+      const year = postDate.getFullYear();
+      const month = String(postDate.getMonth() + 1).padStart(2, '0');
+      const url = this.url(`/blog/${year}/${month}/${post.slug}/`);
+      const dateFormatted = postDate.toISOString().split('T')[0];
+
+      return `
+        <article class="group cursor-pointer">
+          <a href="${url}" class="block">
+            <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-1">
+              <span class="text-dim text-xs">[${dateFormatted}]</span>
+              <h3 class="text-lg font-bold group-hover:bg-green-400 group-hover:text-black inline-block transition-colors px-1 -ml-1">${post.title}</h3>
+            </div>
+            ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24 border-l-2 border-transparent group-hover:border-green-500 transition-all">${post.description}</p>` : ''}
+          </a>
+        </article>
+      `;
+    }).join('');
+
+    // Get all projects
+    const sortedProjects = [...projects].sort((a, b) => {
+      if (a.order !== undefined && b.order !== undefined) {
+        return a.order - b.order;
+      }
+      if (a.order !== undefined) return -1;
+      if (b.order !== undefined) return 1;
+      return a.title.localeCompare(b.title);
+    });
+
+    const projectsListHtml = sortedProjects.map(project => {
+      const statusBadge = project.order === 0 ? 'PUBLIC' : (project.demo ? 'BETA' : 'ARCHIVED');
+
+      return `
+        <div class="border border-green p-6 hover:bg-dim transition-colors group">
+          <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4">
+              <a href="${this.url(`/projects/${project.slug}/`)}">${project.title.toUpperCase().replace(/\s+/g, '_')}</a>
+            </h3>
+            <span class="text-xs border border-green px-2 py-0.5 text-dim">${statusBadge}</span>
+          </div>
+          <p class="text-sm mb-6 leading-relaxed opacity-90">${project.description}</p>
+          <div class="flex gap-3 text-xs text-dim font-mono">
+            ${project.tags ? project.tags.map(tag => `<span>> ${tag.toUpperCase()}</span>`).join('') : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
     const homeContent = this.templates.render('home', {
       site_name: this.config.siteName,
-      intro: this.config.intro
+      intro: this.config.intro,
+      base_path: this.config.basePath,
+      projects_list: projectsListHtml,
+      posts_list: postsListHtml
     });
 
     const html = this.templates.renderLayout(homeContent, {

@@ -21,6 +21,30 @@
   </ul>
 </nav>
 
+<!-- Projects Section -->
+<section id="projects" class="mb-32 opacity-0 transition-opacity duration-700">
+  <div class="flex items-center gap-3 mb-8">
+    <span class="text-dim">root@ozdamar:~$</span>
+    <h2 class="text-xl font-bold decoration-dotted underline underline-offset-4">ls -la ./projects/</h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    {{projects_list}}
+  </div>
+</section>
+
+<!-- Logs / Blog -->
+<section id="logs" class="mb-32 opacity-0 transition-opacity duration-700">
+  <div class="flex items-center gap-3 mb-8">
+    <span class="text-dim">root@ozdamar:~$</span>
+    <h2 class="text-xl font-bold decoration-dotted underline underline-offset-4">tail -n 3 ./logs/thoughts.txt</h2>
+  </div>
+
+  <div class="space-y-6">
+    {{posts_list}}
+  </div>
+</section>
+
 <script>
   // Typing Effect
   const textToType = "Hello, World. I'm Yigit.";
@@ -39,8 +63,18 @@
       setTimeout(() => {
         subtextElement.classList.remove('opacity-0');
         navElement.classList.remove('opacity-0');
+        revealSections();
       }, 500);
     }
+  }
+
+  function revealSections() {
+    setTimeout(() => {
+      document.getElementById('projects').classList.remove('opacity-0');
+    }, 300);
+    setTimeout(() => {
+      document.getElementById('logs').classList.remove('opacity-0');
+    }, 600);
   }
 
   window.addEventListener('load', typeWriter);

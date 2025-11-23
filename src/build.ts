@@ -119,7 +119,7 @@ async function build(): Promise<void> {
   console.log('Generating pages...');
   const generator = new SiteGenerator(templates, config, DIST_DIR);
 
-  generator.generateHome();
+  generator.generateHome(posts, projects);
 
   if (posts.length > 0) {
     for (const post of posts) {
