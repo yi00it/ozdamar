@@ -180,7 +180,8 @@ export class SiteGenerator {
 
       const indexContent = this.templates.render('blog-index', {
         posts_list: postsListHtml,
-        pagination: paginationHtml
+        pagination: paginationHtml,
+        base_path: this.config.basePath
       });
 
       const html = this.templates.renderLayout(indexContent, {
@@ -266,7 +267,8 @@ export class SiteGenerator {
     }).join('');
 
     const indexContent = this.templates.render('projects-index', {
-      projects_list: projectsListHtml
+      projects_list: projectsListHtml,
+      base_path: this.config.basePath
     });
 
     const html = this.templates.renderLayout(indexContent, {
