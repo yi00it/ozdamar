@@ -40,10 +40,10 @@ export class SiteGenerator {
           <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-1">
             <span class="text-dim text-xs">[${dateFormatted}]</span>
             <h3 class="text-lg font-bold inline-block">
-              <a href="${url}" class="group-hover:bg-[#33ff00] group-hover:text-black transition-colors px-1 -ml-1 inline-block">${post.title}</a>
+              <a href="${url}" class="px-1 -ml-1 inline-block">${post.title}</a>
             </h3>
           </div>
-          ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24 border-l-2 border-transparent group-hover:border-[#33ff00] transition-all">${post.description}</p>` : ''}
+          ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24">${post.description}</p>` : ''}
         </article>
       `;
     }).join('');
@@ -157,10 +157,10 @@ export class SiteGenerator {
             <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-1">
               <span class="text-dim text-xs">[${dateFormatted}]</span>
               <h3 class="text-lg font-bold inline-block">
-                <a href="${url}" class="group-hover:bg-[#33ff00] group-hover:text-black transition-colors px-1 -ml-1 inline-block">${post.title}</a>
+                <a href="${url}" class="px-1 -ml-1 inline-block">${post.title}</a>
               </h3>
             </div>
-            ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24 border-l-2 border-transparent group-hover:border-[#33ff00] transition-all">${post.description}</p>` : ''}
+            ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24">${post.description}</p>` : ''}
           </article>
         `;
       }).join('');
@@ -170,10 +170,10 @@ export class SiteGenerator {
         const links = [];
         if (page > 1) {
           const prevUrl = page === 2 ? this.url('/blog/') : this.url(`/blog/page/${page - 1}/`);
-          links.push(`<a href="${prevUrl}" class="inline-block border border-green px-8 py-3 hover:bg-green-400 hover:text-black hover:font-bold transition-all uppercase tracking-widest text-sm">Previous</a>`);
+          links.push(`<a href="${prevUrl}" class="inline-block border border-green px-8 py-3 transition-all uppercase tracking-widest text-sm">Previous</a>`);
         }
         if (page < totalPages) {
-          links.push(`<a href="${this.url(`/blog/page/${page + 1}/`)}" class="inline-block border border-green px-8 py-3 hover:bg-green-400 hover:text-black hover:font-bold transition-all uppercase tracking-widest text-sm">Next</a>`);
+          links.push(`<a href="${this.url(`/blog/page/${page + 1}/`)}" class="inline-block border border-green px-8 py-3 transition-all uppercase tracking-widest text-sm">Next</a>`);
         }
         paginationHtml = `<div class="flex gap-4 justify-center mt-12">${links.join('')}</div>`;
       }
@@ -211,7 +211,7 @@ export class SiteGenerator {
       : '';
 
     const demoLink = project.demo
-      ? `<a href="${project.demo}" target="_blank" rel="noopener noreferrer" class="inline-block border border-green px-8 py-3 hover:bg-green-400 hover:text-black hover:font-bold transition-all uppercase tracking-widest text-sm text-center">View Demo</a>`
+      ? `<a href="${project.demo}" target="_blank" rel="noopener noreferrer" class="inline-block border border-green px-8 py-3 transition-all uppercase tracking-widest text-sm text-center">View Demo</a>`
       : '';
 
     const projectContent = this.templates.render('project', {

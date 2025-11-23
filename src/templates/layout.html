@@ -7,6 +7,15 @@
   <meta name="description" content="{{page_description}}">
   <link rel="stylesheet" href="{{base_path}}/assets/main.css">
   <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="{{base_path}}/feed.xml">
+  <script>
+    // Prevent flash of incorrect theme
+    (function() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      if (theme === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+    })();
+  </script>
 </head>
 <body class="min-h-screen relative screen-flicker">
 
@@ -19,7 +28,12 @@
     <!-- Header Status Bar -->
     <header class="border-b border-green pb-4 mb-12 flex justify-between items-center text-xs md:text-sm tracking-widest uppercase text-dim">
       <div>SYS.STATUS: ONLINE</div>
-      <div id="clock">00:00:00</div>
+      <div class="flex items-center gap-4">
+        <button id="theme-toggle" class="border border-green px-2 py-1 hover:bg-dim transition-all cursor-pointer" aria-label="Toggle theme">
+          <span id="theme-label">[DARK]</span>
+        </button>
+        <div id="clock">00:00:00</div>
+      </div>
     </header>
 
     <main>
@@ -40,6 +54,46 @@
 
   <!-- Scripts -->
   <script>
+    // Theme Toggle Functionality
+    function initTheme() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      const themeLabel = document.getElementById('theme-label');
+      const html = document.documentElement;
+
+      if (theme === 'light') {
+        html.classList.add('light-theme');
+        if (themeLabel) themeLabel.textContent = '[LIGHT]';
+      } else {
+        html.classList.remove('light-theme');
+        if (themeLabel) themeLabel.textContent = '[DARK]';
+      }
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeLabel = document.getElementById('theme-label');
+      const isLight = html.classList.contains('light-theme');
+
+      if (isLight) {
+        html.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+        if (themeLabel) themeLabel.textContent = '[DARK]';
+      } else {
+        html.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+        if (themeLabel) themeLabel.textContent = '[LIGHT]';
+      }
+    }
+
+    // Initialize theme on page load
+    initTheme();
+
+    // Attach event listener to toggle button
+    const toggleButton = document.getElementById('theme-toggle');
+    if (toggleButton) {
+      toggleButton.addEventListener('click', toggleTheme);
+    }
+
     // Clock Functionality
     function updateClock() {
       const now = new Date();

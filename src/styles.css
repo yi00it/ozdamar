@@ -5,16 +5,35 @@
 @tailwind utilities;
 
 @layer base {
+  /* Dark theme (default) */
   :root {
-    --terminal-green: #33ff00;
-    --terminal-dim: #1a8000;
-    --terminal-bg: #0a0a0a;
-    --terminal-glow: 0 0 10px rgba(51, 255, 0, 0.7);
+    --primary-color: #33ff00;
+    --secondary-color: #1a8000;
+    --bg-color: #0a0a0a;
+    --text-color: #33ff00;
+    --text-glow: 0 0 10px rgba(51, 255, 0, 0.7);
+    --bg-dim: rgba(26, 128, 0, 0.1);
+    --code-bg: rgba(26, 128, 0, 0.2);
+    --scanline-dark: rgba(0, 0, 0, 0.25);
+    --scanline-light: rgba(18, 16, 16, 0);
+  }
+
+  /* Light theme */
+  .light-theme {
+    --primary-color: #33ff00;
+    --secondary-color: #2d7000;
+    --bg-color: #f5f5dc;
+    --text-color: #0d4d00;
+    --text-glow: 0 0 4px rgba(13, 77, 0, 0.5);
+    --bg-dim: rgba(45, 112, 0, 0.08);
+    --code-bg: rgba(45, 112, 0, 0.15);
+    --scanline-dark: rgba(255, 255, 255, 0.15);
+    --scanline-light: rgba(245, 245, 220, 0);
   }
 
   body {
-    background-color: var(--terminal-bg);
-    color: var(--terminal-green);
+    background-color: var(--bg-color);
+    color: var(--text-color);
     font-family: 'Fira Code', monospace;
     overflow-x: hidden;
     -webkit-font-smoothing: none;
@@ -25,22 +44,22 @@
   }
 
   ::selection {
-    background: var(--terminal-green);
-    color: var(--terminal-bg);
+    background: var(--primary-color);
+    color: var(--bg-color);
   }
 
   ::-webkit-scrollbar {
     width: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--terminal-bg);
-    border-left: 1px solid var(--terminal-dim);
+    background: var(--bg-color);
+    border-left: 1px solid var(--secondary-color);
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--terminal-dim);
+    background: var(--secondary-color);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--terminal-green);
+    background: var(--primary-color);
   }
 }
 
@@ -48,8 +67,8 @@
   /* CRT Effects */
   .crt-overlay {
     background: linear-gradient(
-      rgba(18, 16, 16, 0) 50%,
-      rgba(0, 0, 0, 0.25) 50%
+      var(--scanline-light) 50%,
+      var(--scanline-dark) 50%
     ), linear-gradient(
       90deg,
       rgba(255, 0, 0, 0.06),
@@ -72,7 +91,7 @@
 
   /* Text Glow */
   .glow-text {
-    text-shadow: 0 0 4px rgba(51, 255, 0, 0.5);
+    text-shadow: var(--text-glow);
   }
 
   /* Blinking Cursor */
@@ -80,7 +99,7 @@
     display: inline-block;
     width: 10px;
     height: 1.2em;
-    background-color: var(--terminal-green);
+    background-color: var(--primary-color);
     animation: blink 1s step-end infinite;
     vertical-align: middle;
     margin-left: 2px;
@@ -93,15 +112,15 @@
 
   /* Utility Classes */
   .border-green {
-    border-color: var(--terminal-dim);
+    border-color: var(--secondary-color);
   }
 
   .text-dim {
-    color: var(--terminal-dim);
+    color: var(--secondary-color);
   }
 
   .bg-dim {
-    background-color: rgba(26, 128, 0, 0.1);
+    background-color: var(--bg-dim);
   }
 
   /* Link Hovers */
@@ -110,20 +129,20 @@
   }
 
   a:hover {
-    background-color: var(--terminal-green);
-    color: var(--terminal-bg);
+    background-color: var(--primary-color);
+    color: var(--bg-color);
     text-decoration: none;
-    box-shadow: 0 0 8px var(--terminal-green);
+    box-shadow: 0 0 8px var(--primary-color);
   }
 
   /* Prose styling for blog content */
   .prose {
-    color: var(--terminal-green);
+    color: var(--text-color);
     max-width: 65ch;
   }
 
   .prose h1, .prose h2, .prose h3, .prose h4 {
-    color: var(--terminal-green);
+    color: var(--text-color);
     font-weight: 700;
     text-decoration: underline;
     text-decoration-style: dotted;
@@ -137,22 +156,22 @@
   }
 
   .prose a {
-    color: var(--terminal-green);
+    color: var(--text-color);
     text-decoration: underline;
     font-weight: 500;
   }
 
   .prose code {
-    color: var(--terminal-green);
-    background-color: rgba(26, 128, 0, 0.2);
+    color: var(--text-color);
+    background-color: var(--code-bg);
     padding: 0.2em 0.4em;
     border-radius: 3px;
     font-size: 0.9em;
   }
 
   .prose pre {
-    background-color: rgba(26, 128, 0, 0.1);
-    border: 1px solid var(--terminal-dim);
+    background-color: var(--bg-dim);
+    border: 1px solid var(--secondary-color);
     padding: 1em;
     overflow-x: auto;
     margin-top: 1.5em;
@@ -176,7 +195,7 @@
   }
 
   .prose blockquote {
-    border-left: 2px solid var(--terminal-green);
+    border-left: 2px solid var(--primary-color);
     padding-left: 1em;
     font-style: italic;
     margin-top: 1.6em;
