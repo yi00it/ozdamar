@@ -60,12 +60,13 @@ export class SiteGenerator {
 
     const projectsListHtml = sortedProjects.map(project => {
       const statusBadge = project.order === 0 ? 'PUBLIC' : (project.demo ? 'BETA' : 'ARCHIVED');
+      const projectTitle = project.title.toUpperCase().replace(/\s+/g, '_');
 
       return `
         <div class="border border-green p-6 hover:bg-dim transition-colors group">
           <div class="flex justify-between items-start gap-4 mb-4">
-            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0">
-              <a href="${this.url(`/projects/${project.slug}/`)}">${project.title.toUpperCase().replace(/\s+/g, '_')}</a>
+            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0 truncate">
+              <a href="${this.url(`/projects/${project.slug}/`)}" title="${projectTitle}">${projectTitle}</a>
             </h3>
             <span class="text-xs border border-green px-2 py-0.5 text-dim flex-shrink-0">${statusBadge}</span>
           </div>
@@ -244,12 +245,13 @@ export class SiteGenerator {
 
     const projectsListHtml = sortedProjects.map(project => {
       const statusBadge = project.order === 0 ? 'PUBLIC' : (project.demo ? 'BETA' : 'ARCHIVED');
+      const projectTitle = project.title.toUpperCase().replace(/\s+/g, '_');
 
       return `
         <div class="border border-green p-6 hover:bg-dim transition-colors group">
           <div class="flex justify-between items-start gap-4 mb-4">
-            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0">
-              <a href="${this.url(`/projects/${project.slug}/`)}">${project.title.toUpperCase().replace(/\s+/g, '_')}</a>
+            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0 truncate">
+              <a href="${this.url(`/projects/${project.slug}/`)}" title="${projectTitle}">${projectTitle}</a>
             </h3>
             <span class="text-xs border border-green px-2 py-0.5 text-dim flex-shrink-0">${statusBadge}</span>
           </div>
