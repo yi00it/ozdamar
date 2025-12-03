@@ -16,10 +16,10 @@ const OUTPUT_CSS_PATH = path.join(OUTPUT_CSS_DIR, 'main.css');
 
 const config: SiteConfig = {
   siteName: 'Ozdamar',
-  siteUrl: 'https://yi00it.github.io/ozdamar',
+  siteUrl: 'https://ozdamar.net',
   siteDescription: 'Personal website and blog',
   intro: "I've spent my career in construction project management, and now I'm building my own construction software—powered by the insane productivity of the AI era.",
-  basePath: '/ozdamar'
+  basePath: ''
 };
 
 function cleanDist(): void {
