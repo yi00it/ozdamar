@@ -211,4 +211,16 @@
     margin-bottom: 1.6em;
     opacity: 0.8;
   }
+
+  /* Contact buttons */
+  .contact-btn {
+    color: var(--text-color);
+    border-color: var(--secondary-color);
+  }
+
+  .contact-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+    font-weight: bold;
+  }
 }

@@ -10,7 +10,7 @@
   <script>
     // Prevent flash of incorrect theme
     (function() {
-      const theme = localStorage.getItem('theme') || 'dark';
+      const theme = localStorage.getItem('theme') || 'light';
       if (theme === 'light') {
         document.documentElement.classList.add('light-theme');
       }
@@ -56,7 +56,7 @@
   <script>
     // Theme Toggle Functionality
     function initTheme() {
-      const theme = localStorage.getItem('theme') || 'dark';
+      const theme = localStorage.getItem('theme') || 'light';
       const themeLabel = document.getElementById('theme-label');
       const html = document.documentElement;
 
