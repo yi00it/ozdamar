@@ -1163,25 +1163,22 @@ a:hover .icon::after {
   }
 
   .masthead {
-    flex-wrap: wrap;
     gap: 10px;
-    padding: 10px 0;
-    margin-top: 4px;
+    padding: 12px 0;
+    margin-top: 0;
   }
 
   .nav {
-    width: 100%;
+    gap: 0;
   }
 
   .nav a {
-    flex: 1;
-    padding: 6px 0;
-    text-align: center;
-    font-size: 13.5px;
+    padding: 5px 8px;
+    font-size: 13px;
   }
 
   .brand {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .shelf-row {
@@ -1195,6 +1192,26 @@ a:hover .icon::after {
 
   .icon-head .lede {
     font-size: 15.5px;
+  }
+}
+
+/* Very small phones: keep the wordmark and nav on one line */
+@media (max-width: 374px) {
+  .wrap {
+    padding: 0 16px;
+  }
+
+  .masthead {
+    gap: 6px;
+  }
+
+  .nav a {
+    padding: 5px 6px;
+    font-size: 12.5px;
+  }
+
+  .brand {
+    font-size: 16px;
   }
 }
 
