@@ -50,6 +50,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: clip;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--sans);
@@ -86,6 +87,7 @@ button {
 h1,
 h2,
 h3,
+h4,
 p,
 ul,
 ol,
@@ -101,53 +103,125 @@ figure {
   padding: 0 24px;
 }
 
-/* The one colour on the page */
-.dot {
-  display: inline-block;
-  flex: none;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
 /* ------------------------------------------------------------------
    Masthead
    ------------------------------------------------------------------ */
 .masthead {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 44px 0 0;
+  padding: 18px 0;
+  margin-top: 22px;
+}
+
+/* Frosted band, full width, shown once the page scrolls */
+.masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(50% - 50vw);
+  z-index: -1;
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  backdrop-filter: blur(18px) saturate(1.6);
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.masthead.is-scrolled::before {
+  opacity: 1;
 }
 
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 11px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  white-space: nowrap;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
+/* Wordmark: ozdamar, with a slightly bold orange full stop */
+.brand__dot {
+  display: inline-block;
+  width: 0.22em;
+  height: 0.22em;
+  margin-left: 0.06em;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: transform 0.5s var(--spring);
+}
+
+.brand:hover .brand__dot {
+  transform: scale(1.35);
+}
+
+/* Capsule nav: the current page is a raised pill */
 .nav {
+  position: relative;
   display: flex;
-  gap: 26px;
-  font-size: 15px;
-  color: var(--quiet);
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--well);
 }
 
 .nav a {
+  position: relative;
+  z-index: 1;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--quiet);
   transition: color 0.2s ease;
 }
 
-.nav a:hover {
+.nav a:hover,
+.nav a[aria-current] {
   color: var(--ink);
 }
 
+.nav a[aria-current],
+.nav__pill {
+  background: var(--paper);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.06);
+}
+
+/* With JS a single pill slides between links */
+.has-pill .nav a[aria-current] {
+  background: none;
+  box-shadow: none;
+}
+
+.nav__pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: 0;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.45s var(--ease),
+    width 0.45s var(--ease),
+    opacity 0.25s ease;
+}
+
+.nav__pill.is-on {
+  opacity: 1;
+}
+
+.nav__pill.is-instant {
+  transition: none;
+}
+
 main {
-  padding-top: 112px;
+  padding-top: 72px;
 }
 
 /* ------------------------------------------------------------------
@@ -795,6 +869,181 @@ a:hover .icon::after {
 }
 
 /* ------------------------------------------------------------------
+   Shelf: covers, ratings, a few words
+   ------------------------------------------------------------------ */
+.page-head + .block {
+  margin-top: 0;
+}
+
+/* Books | Movies switch */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  background: var(--well);
+}
+
+.segmented[hidden] {
+  display: none;
+}
+
+.segmented button {
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--quiet);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.segmented button:hover {
+  color: var(--ink);
+}
+
+.segmented button[aria-selected="true"] {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.06);
+}
+
+.segmented__count {
+  margin-left: 4px;
+  font-weight: 400;
+  color: var(--quiet);
+  font-variant-numeric: tabular-nums;
+}
+
+.shelf-panel + .shelf-panel {
+  margin-top: 72px;
+}
+
+.has-tabs .shelf-panel .label {
+  display: none;
+}
+
+.has-tabs .shelf-panel + .shelf-panel {
+  margin-top: 0;
+}
+
+/* One thin row per item */
+.shelf-list {
+  list-style: none;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.shelf-row {
+  display: grid;
+  grid-template-columns: 33px 1fr auto;
+  gap: 16px;
+  align-items: start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.shelf-row--uses {
+  grid-template-columns: 32px 1fr;
+  align-items: center;
+}
+
+/* Group headings inside a Uses tab */
+.group-label {
+  margin: 40px 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.shelf-panel > .group-label:first-of-type {
+  margin-top: 12px;
+}
+
+.shelf-row--uses {
+  padding: 10px 0;
+}
+
+.shelf-row:hover .icon {
+  transform: translateY(-2px) rotate(-6deg) scale(1.08);
+}
+
+.shelf-row__cover {
+  display: block;
+  width: 33px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 2px;
+  background: var(--well);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 2px 5px -2px rgb(0 0 0 / 0.3);
+  transition: transform 0.5s var(--spring);
+}
+
+.shelf-row__cover--book {
+  border-radius: 1px 3px 3px 1px;
+}
+
+.shelf-row:hover .shelf-row__cover {
+  transform: translateY(-2px) rotate(-3deg);
+}
+
+.shelf-row__body {
+  min-width: 0;
+}
+
+.shelf-row__title {
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
+}
+
+.shelf-row__by {
+  margin-top: 1px;
+  font-size: 13.5px;
+  color: var(--quiet);
+  font-variant-numeric: tabular-nums;
+}
+
+.shelf-row__note {
+  margin-top: 5px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--soft);
+  text-wrap: pretty;
+}
+
+.shelf-row .rating {
+  margin-top: 7px;
+}
+
+.rating {
+  display: flex;
+  gap: 4px;
+  margin-top: 9px;
+}
+
+.rating__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rule);
+}
+
+.rating__dot.is-full {
+  background: var(--accent);
+}
+
+.rating__dot.is-half {
+  background: linear-gradient(90deg, var(--accent) 50%, var(--rule) 50%);
+}
+
+/* ------------------------------------------------------------------
    Pagination
    ------------------------------------------------------------------ */
 .pagination {
@@ -850,26 +1099,22 @@ a:hover .icon::after {
    Small screens
    ------------------------------------------------------------------ */
 @media (max-width: 560px) {
-  .masthead {
-    padding-top: 28px;
-  }
-
   main {
-    padding-top: 64px;
+    padding-top: 40px;
   }
 
   .is-home main {
-    padding: 44px 0 40px;
+    padding: 18px 0 20px;
   }
 
   .home__grid {
     grid-template-columns: 1fr;
-    gap: 28px;
-    margin-top: 36px;
+    gap: 22px;
+    margin-top: 26px;
   }
 
   .mini__item {
-    padding: 7px 0;
+    padding: 6px 0;
   }
 
   .mini__meta {
@@ -912,6 +1157,32 @@ a:hover .icon::after {
   .colophon {
     flex-direction: column;
     gap: 12px;
+  }
+
+  .masthead {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 0;
+    margin-top: 4px;
+  }
+
+  .nav {
+    width: 100%;
+  }
+
+  .nav a {
+    flex: 1;
+    padding: 6px 0;
+    text-align: center;
+    font-size: 13.5px;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .shelf-row {
+    gap: 14px;
   }
 
   .icon-head {

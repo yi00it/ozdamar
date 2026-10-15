@@ -70,6 +70,8 @@ function loadTemplates(templates: TemplateEngine): void {
   templates.loadTemplate('projects-index', TEMPLATES_DIR);
   templates.loadTemplate('project', TEMPLATES_DIR);
   templates.loadTemplate('tag', TEMPLATES_DIR);
+  templates.loadTemplate('shelf', TEMPLATES_DIR);
+  templates.loadTemplate('uses', TEMPLATES_DIR);
   templates.loadXMLTemplate('rss', TEMPLATES_DIR);
   templates.loadXMLTemplate('sitemap', TEMPLATES_DIR);
 }
@@ -135,6 +137,15 @@ async function build(): Promise<void> {
       generator.generateProject(project);
     }
     generator.generateProjectsIndex(projects);
+  }
+
+  const books = parser.loadShelf(path.join(CONTENT_DIR, 'shelf', 'books'));
+  const movies = parser.loadShelf(path.join(CONTENT_DIR, 'shelf', 'movies'));
+  generator.generateShelf(books, movies);
+
+  const uses = parser.loadUses(path.join(CONTENT_DIR, 'uses.md'));
+  if (uses) {
+    generator.generateUses(uses);
   }
 
   if (posts.length > 0 || projects.length > 0) {

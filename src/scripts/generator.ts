@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { TemplateEngine } from './template';
-import { BlogPost, Project, normalizeTagSlug } from './content';
+import { BlogPost, Project, ShelfItem, Uses, UsesGroup, UsesItem, normalizeTagSlug } from './content';
 
 const GITHUB_MARK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
 
@@ -136,8 +136,24 @@ export class SiteGenerator {
       .join('');
   }
 
+  // Primary nav; the section a page belongs to is marked current
+  private navLinks(pagePath: string): string {
+    const sections = [
+      { href: '/blog/', label: 'Writing', match: ['/blog/', '/tag/'] },
+      { href: '/projects/', label: 'Projects', match: ['/projects/'] },
+      { href: '/shelf/', label: 'Shelf', match: ['/shelf/'] },
+      { href: '/uses/', label: 'Uses', match: ['/uses/'] }
+    ];
+    return sections.map(section => {
+      const current = pagePath === section.href ? ' aria-current="page"'
+        : section.match.some(prefix => pagePath.startsWith(prefix)) ? ' aria-current="true"' : '';
+      return `<a href="${this.url(section.href)}"${current}>${section.label}</a>`;
+    }).join('\n        ');
+  }
+
   private page(content: string, title: string, description: string, pagePath: string, bodyClass = ''): string {
     return this.templates.renderLayout(content, {
+      nav_links: this.navLinks(pagePath),
       body_class: bodyClass,
       page_title: title,
       page_description: description,
@@ -310,6 +326,109 @@ export class SiteGenerator {
     }
   }
 
+  // Five dots, filled in the accent colour; halves allowed
+  private ratingDots(rating: number | undefined): string {
+    if (rating === undefined) return '';
+    const dots = [1, 2, 3, 4, 5].map(n => {
+      const state = rating >= n ? ' is-full' : rating >= n - 0.5 ? ' is-half' : '';
+      return `<span class="rating__dot${state}"></span>`;
+    }).join('');
+    return `<p class="rating" role="img" aria-label="Rated ${rating} out of 5">${dots}</p>`;
+  }
+
+  private sortShelf(items: ShelfItem[]): ShelfItem[] {
+    return [...items].sort((a, b) => {
+      if (a.finished && b.finished) return b.finished.localeCompare(a.finished);
+      if (a.finished) return -1;
+      if (b.finished) return 1;
+      return (a.order ?? Infinity) - (b.order ?? Infinity) || a.title.localeCompare(b.title);
+    });
+  }
+
+  private shelfRow(item: ShelfItem, kind: 'book' | 'movie'): string {
+    const fullTitle = (item.subtitle ? `${item.title}: ${item.subtitle}` : item.title).replace(/"/g, '&quot;');
+    const by = [item.creator, item.year].filter(Boolean).join(' · ');
+    return `
+    <li class="shelf-row">
+      <img class="shelf-row__cover shelf-row__cover--${kind}" src="${this.url(item.cover)}" alt="" loading="lazy" width="66" height="100">
+      <div class="shelf-row__body">
+        <h3 class="shelf-row__title" title="${fullTitle}">${item.title}</h3>
+        <p class="shelf-row__by">${by}</p>
+        ${item.comment ? `<p class="shelf-row__note">${item.comment}</p>` : ''}
+      </div>
+      ${this.ratingDots(item.rating)}
+    </li>`;
+  }
+
+  // A Books | Movies style switch with one list per tab; works as plain sections without JS
+  private tabbedLists(name: string, tabs: { id: string; label: string; count: number; body: string }[]): string {
+    const shown = tabs.filter(tab => tab.count > 0);
+    const buttons = shown.map((tab, i) => `
+  <button type="button" role="tab" id="tab-${tab.id}" aria-controls="${name}-${tab.id}" aria-selected="${i === 0}" data-tab="${tab.id}"${i === 0 ? '' : ' tabindex="-1"'}>${tab.label} <span class="segmented__count">${tab.count}</span></button>`).join('');
+    const panels = shown.map(tab => `
+<section class="shelf-panel" id="${name}-${tab.id}" data-panel="${tab.id}" role="tabpanel" aria-labelledby="tab-${tab.id}">
+  <h2 class="label">${tab.label}</h2>${tab.body}
+</section>`).join('');
+    return `
+<div class="segmented" role="tablist" aria-label="${name}" data-tabs hidden>${buttons}
+</div>
+${panels}`;
+  }
+
+  private list(rows: string[]): string {
+    return `
+  <ul class="shelf-list">${rows.join('')}
+  </ul>`;
+  }
+
+  generateShelf(books: ShelfItem[], movies: ShelfItem[]): void {
+    const content = this.templates.render('shelf', {
+      lists: this.tabbedLists('shelf', [
+        { id: 'books', label: 'Books', count: books.length, body: this.list(this.sortShelf(books).map(item => this.shelfRow(item, 'book'))) },
+        { id: 'movies', label: 'Movies', count: movies.length, body: this.list(this.sortShelf(movies).map(item => this.shelfRow(item, 'movie'))) }
+      ])
+    });
+
+    const html = this.page(content, `Shelf — ${this.config.siteName}`, `Books and movies, with ratings and a few words on each.`, '/shelf/');
+    this.writeFile(path.join(this.distDir, 'shelf', 'index.html'), html);
+  }
+
+  private usesRow(item: UsesItem): string {
+    const icon = item.icon
+      ? `<span class="icon icon--sm" aria-hidden="true"><img src="${this.url(`/icons/uses/${item.icon}.svg`)}" alt="" width="64" height="64"></span>`
+      : `<span class="icon icon--sm icon--letter" aria-hidden="true">${item.name.charAt(0)}</span>`;
+    return `
+    <li class="shelf-row shelf-row--uses">
+      ${icon}
+      <div class="shelf-row__body">
+        <h4 class="shelf-row__title">${item.name}</h4>
+        ${item.note ? `<p class="shelf-row__note">${item.note}</p>` : ''}
+      </div>
+    </li>`;
+  }
+
+  private countUses(groups: UsesGroup[]): number {
+    return groups.reduce((sum, group) => sum + group.items.length, 0);
+  }
+
+  private usesGroups(groups: UsesGroup[]): string {
+    return groups.map(group => `
+  <h3 class="group-label">${group.group}</h3>${this.list(group.items.map(item => this.usesRow(item)))}`).join('');
+  }
+
+  generateUses(uses: Uses): void {
+    const content = this.templates.render('uses', {
+      description: uses.description,
+      lists: this.tabbedLists('uses', [
+        { id: 'hardware', label: 'Hardware', count: this.countUses(uses.hardware), body: this.usesGroups(uses.hardware) },
+        { id: 'software', label: 'Software', count: this.countUses(uses.software), body: this.usesGroups(uses.software) }
+      ])
+    });
+
+    const html = this.page(content, `Uses — ${this.config.siteName}`, uses.description, '/uses/');
+    this.writeFile(path.join(this.distDir, 'uses', 'index.html'), html);
+  }
+
   generateRSS(posts: BlogPost[]): void {
     const items = this.sortPosts(posts).slice(0, 20).map(post => {
       const url = `${this.config.siteUrl}${this.postPath(post)}`;
@@ -348,8 +467,10 @@ export class SiteGenerator {
       urls.push(this.sitemapUrl(`${this.config.siteUrl}${this.postPath(post)}`, new Date(post.date)));
     }
 
-    // Projects index
+    // Projects index, shelf and uses
     urls.push(this.sitemapUrl(`${this.config.siteUrl}/projects/`, new Date()));
+    urls.push(this.sitemapUrl(`${this.config.siteUrl}/shelf/`, new Date()));
+    urls.push(this.sitemapUrl(`${this.config.siteUrl}/uses/`, new Date()));
 
     // Projects
     for (const project of projects) {
