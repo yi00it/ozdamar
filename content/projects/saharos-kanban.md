@@ -4,7 +4,7 @@ slug: "saharos-kanban"
 description: "A lightweight, customizable Kanban board component."
 github: "https://github.com/yi00it/saharos-kanban"
 tags: ["react", "kanban", "component", "npm"]
-order: 2
+order: 3
 icon: "/icons/saharos-kanban.svg"
 ---
 

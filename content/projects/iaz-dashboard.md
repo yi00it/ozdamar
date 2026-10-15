@@ -4,7 +4,7 @@ slug: "iaz-dashboard"
 description: "A dashboard framework with ready-made components and layouts."
 github: "https://github.com/yi00it/iaz-dashboard"
 tags: ["dashboard", "react", "components", "ui"]
-order: 3
+order: 4
 icon: "/icons/iaz-dashboard.svg"
 ---
 
