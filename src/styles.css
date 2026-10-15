@@ -186,18 +186,20 @@ figure {
 }
 
 .nav a[aria-current],
-.nav__pill {
+.segmented button[aria-selected="true"],
+.pill {
   background: var(--paper);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.06);
 }
 
-/* With JS a single pill slides between links */
-.has-pill .nav a[aria-current] {
+/* With JS a single pill slides between items */
+.has-pill .nav a[aria-current],
+.has-pill .segmented button[aria-selected="true"] {
   background: none;
   box-shadow: none;
 }
 
-.nav__pill {
+.pill {
   position: absolute;
   top: 3px;
   bottom: 3px;
@@ -212,11 +214,11 @@ figure {
     opacity 0.25s ease;
 }
 
-.nav__pill.is-on {
+.pill.is-on {
   opacity: 1;
 }
 
-.nav__pill.is-instant {
+.pill.is-instant {
   transition: none;
 }
 
@@ -877,11 +879,12 @@ a:hover .icon::after {
 
 /* Books | Movies switch */
 .segmented {
+  position: relative;
   display: inline-flex;
   gap: 2px;
   padding: 3px;
   margin-bottom: 20px;
-  border-radius: 10px;
+  border-radius: 999px;
   background: var(--well);
 }
 
@@ -890,9 +893,11 @@ a:hover .icon::after {
 }
 
 .segmented button {
+  position: relative;
+  z-index: 1;
   padding: 6px 16px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 999px;
   background: transparent;
   font-size: 14px;
   font-weight: 500;
@@ -906,9 +911,7 @@ a:hover .icon::after {
 }
 
 .segmented button[aria-selected="true"] {
-  background: var(--paper);
   color: var(--ink);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.06);
 }
 
 .segmented__count {

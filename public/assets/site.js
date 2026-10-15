@@ -27,6 +27,52 @@
   sync();
 })();
 
+// One pill per capsule (header nav, Shelf and Uses switches): it slides to the
+// hovered or focused item and back to the current one.
+var slidingPill = (function () {
+  document.documentElement.classList.add('has-pill');
+
+  return function (container, items, getCurrent) {
+    var pill = document.createElement('span');
+    pill.className = 'pill is-instant';
+    pill.setAttribute('aria-hidden', 'true');
+    container.insertBefore(pill, container.firstChild);
+
+    function moveTo(item) {
+      if (!item || !item.offsetWidth) {
+        pill.classList.remove('is-on');
+        return;
+      }
+      pill.style.width = item.offsetWidth + 'px';
+      pill.style.transform = 'translateX(' + item.offsetLeft + 'px)';
+      pill.classList.add('is-on');
+    }
+
+    function settle() {
+      moveTo(getCurrent());
+    }
+
+    settle();
+    // Let the first placement land without animating, then enable motion
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { pill.classList.remove('is-instant'); });
+    });
+
+    items.forEach(function (item) {
+      item.addEventListener('pointerenter', function () { moveTo(item); });
+      item.addEventListener('focus', function () { moveTo(item); });
+    });
+    container.addEventListener('pointerleave', settle);
+    container.addEventListener('focusout', function (e) {
+      if (!container.contains(e.relatedTarget)) settle();
+    });
+    window.addEventListener('resize', settle);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(settle);
+
+    return settle;
+  };
+})();
+
 // Shelf and Uses: show one list at a time; the hash (#books, #software…) keeps it linkable.
 (function () {
   var tabs = document.querySelector('[data-tabs]');
@@ -35,6 +81,7 @@
   var buttons = Array.prototype.slice.call(tabs.querySelectorAll('[data-tab]'));
   var panels = Array.prototype.slice.call(document.querySelectorAll('[data-panel]'));
   var names = buttons.map(function (b) { return b.getAttribute('data-tab'); });
+  var settle = function () {};
 
   function show(name, focus) {
     buttons.forEach(function (b) {
@@ -46,6 +93,7 @@
     panels.forEach(function (p) {
       p.hidden = p.getAttribute('data-panel') !== name;
     });
+    settle();
   }
 
   buttons.forEach(function (b, i) {
@@ -66,50 +114,21 @@
   tabs.hidden = false;
   document.documentElement.classList.add('has-tabs');
   show(names.indexOf(initial) >= 0 ? initial : names[0]);
+  settle = slidingPill(tabs, buttons, function () {
+    return tabs.querySelector('[aria-selected="true"]');
+  });
 })();
 
-// Header: a pill that slides to the hovered link and back to the current page,
-// and a frosted band once the page has scrolled.
+// Header: the nav pill, and a frosted band once the page has scrolled.
 (function () {
-  var root = document.documentElement;
   var masthead = document.querySelector('.masthead');
   var nav = document.querySelector('.nav');
   if (!masthead || !nav) return;
 
-  var links = Array.prototype.slice.call(nav.querySelectorAll('a'));
   var current = nav.querySelector('a[aria-current]');
-  var pill = document.createElement('span');
-  pill.className = 'nav__pill is-instant';
-  pill.setAttribute('aria-hidden', 'true');
-  nav.insertBefore(pill, nav.firstChild);
-  root.classList.add('has-pill');
-
-  function moveTo(link) {
-    if (!link) {
-      pill.classList.remove('is-on');
-      return;
-    }
-    pill.style.width = link.offsetWidth + 'px';
-    pill.style.transform = 'translateX(' + link.offsetLeft + 'px)';
-    pill.classList.add('is-on');
-  }
-
-  moveTo(current);
-  // Let the first placement land without animating, then enable motion
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () { pill.classList.remove('is-instant'); });
+  slidingPill(nav, Array.prototype.slice.call(nav.querySelectorAll('a')), function () {
+    return current;
   });
-
-  links.forEach(function (link) {
-    link.addEventListener('pointerenter', function () { moveTo(link); });
-    link.addEventListener('focus', function () { moveTo(link); });
-  });
-  nav.addEventListener('pointerleave', function () { moveTo(current); });
-  nav.addEventListener('focusout', function (e) {
-    if (!nav.contains(e.relatedTarget)) moveTo(current);
-  });
-  window.addEventListener('resize', function () { moveTo(current); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { moveTo(current); });
 
   var scrolled = false;
   function onScroll() {
