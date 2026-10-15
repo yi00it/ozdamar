@@ -88,7 +88,9 @@ Projects go in `content/projects/` with YAML frontmatter:
 title: Project Title
 slug: project-slug
 description: Project description
-github: https://github.com/username/repo
+github: https://github.com/username/repo (optional if website is set)
+website: https://example.com (optional, for projects that aren't open source)
+icon: /icons/project.svg (optional, file in public/icons/)
 tags: [tag1, tag2]
 demo: https://demo-url.com (optional)
 order: 1 (optional)

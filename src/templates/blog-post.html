@@ -1,30 +1,14 @@
-<article class="max-w-3xl fade-reveal opacity-0 transition-opacity duration-700">
-  <nav class="mb-6 text-sm text-dim">
-    <div class="flex flex-wrap items-center gap-2">
-      <a href="{{base_path}}/">[ / ]</a>
-      <span>></span>
-      <a href="{{base_path}}/blog/">[ logs ]</a>
-      <span>></span>
-      <span>[ {{title}} ]</span>
-    </div>
-  </nav>
-
-  <div class="flex items-center gap-3 mb-8">
-    <span class="text-dim">root@ozdamar:~$</span>
-    <h2 class="text-xl font-bold decoration-dotted underline underline-offset-4">cat ./logs/{{title}}</h2>
-  </div>
-
-  <header class="mb-12 border border-green p-6">
-    <h1 class="text-3xl md:text-4xl font-bold mb-4 glow-text">{{title}}</h1>
-    <div class="flex items-center gap-4 text-sm text-dim mb-4">
-      <span>[</span>
-      <time datetime="{{date_iso}}" class="font-mono">{{date_formatted}}</time>
-      <span>]</span>
-    </div>
-    {{tags_html}}
+<article>
+  <header class="page-head">
+    <h1 class="title">{{title}}</h1>
+    <p class="meta"><span><time datetime="{{date_iso}}">{{date_formatted}}</time></span><span>{{reading_time}}</span></p>
   </header>
 
-  <div class="prose max-w-none">
+  <div class="prose">
     {{content}}
   </div>
+
+  {{tags_html}}
 </article>
+
+<a href="{{base_path}}/blog/" class="back">← Writing</a>

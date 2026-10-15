@@ -15,10 +15,11 @@ const OUTPUT_CSS_DIR = path.join(DIST_DIR, 'assets');
 const OUTPUT_CSS_PATH = path.join(OUTPUT_CSS_DIR, 'main.css');
 
 const config: SiteConfig = {
-  siteName: 'Ozdamar',
+  siteName: 'Yigit Ozdamar',
   siteUrl: 'https://ozdamar.net',
-  siteDescription: 'Personal website and blog',
-  intro: "I've spent my career in construction project management, and now I'm building my own construction software—powered by the insane productivity of the AI era.",
+  siteDescription: 'Construction project manager, building software for construction.',
+  intro: 'I build things.',
+  introSub: 'Some with concrete. Some with code. Others just because I wanted to see if I could.',
   basePath: ''
 };
 

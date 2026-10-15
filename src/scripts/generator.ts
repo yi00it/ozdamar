@@ -3,11 +3,14 @@ import * as path from 'path';
 import { TemplateEngine } from './template';
 import { BlogPost, Project, normalizeTagSlug } from './content';
 
+const GITHUB_MARK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
+
 export interface SiteConfig {
   siteName: string;
   siteUrl: string;
   siteDescription: string;
   intro: string;
+  introSub: string;
   basePath: string;
 }
 
@@ -22,34 +25,23 @@ export class SiteGenerator {
     return `${this.config.basePath}${path}`;
   }
 
-  generateHome(posts: BlogPost[], projects: Project[]): void {
-    // Get recent posts (limit to 3)
-    const recentPosts = [...posts]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3);
+  private postPath(post: BlogPost): string {
+    const postDate = new Date(post.date);
+    const year = postDate.getFullYear();
+    const month = String(postDate.getMonth() + 1).padStart(2, '0');
+    return `/blog/${year}/${month}/${post.slug}/`;
+  }
 
-    const postsListHtml = recentPosts.map(post => {
-      const postDate = new Date(post.date);
-      const year = postDate.getFullYear();
-      const month = String(postDate.getMonth() + 1).padStart(2, '0');
-      const url = this.url(`/blog/${year}/${month}/${post.slug}/`);
-      const dateFormatted = postDate.toISOString().split('T')[0];
+  private postUrl(post: BlogPost): string {
+    return this.url(this.postPath(post));
+  }
 
-      return `
-        <article class="group">
-          <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-1">
-            <span class="text-dim text-xs">[${dateFormatted}]</span>
-            <h3 class="text-lg font-bold inline-block">
-              <a href="${url}" class="px-1 -ml-1 inline-block">${post.title}</a>
-            </h3>
-          </div>
-          ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24">${post.description}</p>` : ''}
-        </article>
-      `;
-    }).join('');
+  private sortPosts(posts: BlogPost[]): BlogPost[] {
+    return [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
 
-    // Get all projects
-    const sortedProjects = [...projects].sort((a, b) => {
+  private sortProjects(projects: Project[]): Project[] {
+    return [...projects].sort((a, b) => {
       if (a.order !== undefined && b.order !== undefined) {
         return a.order - b.order;
       }
@@ -57,228 +49,206 @@ export class SiteGenerator {
       if (b.order !== undefined) return 1;
       return a.title.localeCompare(b.title);
     });
+  }
 
-    const projectsListHtml = sortedProjects.map(project => {
-      const statusBadge = project.order === 0 ? 'PUBLIC' : (project.demo ? 'BETA' : 'ARCHIVED');
-      const projectTitle = project.title.toUpperCase().replace(/\s+/g, '_');
+  private formatDate(date: string, options: Intl.DateTimeFormatOptions): string {
+    return new Date(date).toLocaleDateString('en-US', options);
+  }
 
-      return `
-        <div class="border border-green p-6 hover:bg-dim transition-colors group">
-          <div class="flex justify-between items-start gap-4 mb-4">
-            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0 truncate">
-              <a href="${this.url(`/projects/${project.slug}/`)}" title="${projectTitle}">${projectTitle}</a>
-            </h3>
-            <span class="text-xs border border-green px-2 py-0.5 text-dim flex-shrink-0">${statusBadge}</span>
-          </div>
-          <p class="text-sm mb-6 leading-relaxed opacity-90">${project.description}</p>
-          <div class="flex gap-3 text-xs text-dim font-mono flex-wrap">
-            ${project.tags ? project.tags.map(tag => `<span>> ${tag.toUpperCase()}</span>`).join('') : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
+  private postRow(post: BlogPost, withYear = true): string {
+    const date = this.formatDate(post.date, withYear
+      ? { year: 'numeric', month: 'short', day: 'numeric' }
+      : { month: 'long', day: 'numeric' });
+    return `
+    <li>
+      <a href="${this.postUrl(post)}" class="row row--text">
+        <span class="row__title">${post.title}</span>
+        <time class="row__desc" datetime="${new Date(post.date).toISOString()}">${date}</time>
+      </a>
+    </li>`;
+  }
 
-    const homeContent = this.templates.render('home', {
-      site_name: this.config.siteName,
-      intro: this.config.intro,
-      base_path: this.config.basePath,
-      projects_list: projectsListHtml,
-      posts_list: postsListHtml
-    });
+  private projectRow(project: Project, index: number): string {
+    return `
+    <li>
+      <a href="${this.url(`/projects/${project.slug}/`)}" class="row row--icon">
+        ${this.projectIcon(project)}
+        <span class="row__title">${project.title}</span>
+        <span class="row__desc">${project.description}</span>
+      </a>
+    </li>`;
+  }
 
-    const html = this.templates.renderLayout(homeContent, {
-      page_title: this.config.siteName,
-      page_description: this.config.siteDescription,
+  // Small app-style tile: the project's own icon, or its initial
+  private projectIcon(project: Project, size: 'sm' | 'lg' = 'sm'): string {
+    if (project.icon) {
+      return `<span class="icon icon--${size}" aria-hidden="true"><img src="${this.url(project.icon)}" alt="" width="64" height="64"></span>`;
+    }
+    return `<span class="icon icon--${size} icon--letter" aria-hidden="true">${project.title.charAt(0)}</span>`;
+  }
+
+  private miniPost(post: BlogPost): string {
+    const date = this.formatDate(post.date, { year: 'numeric', month: 'short', day: 'numeric' });
+    return `
+        <li>
+          <a href="${this.postUrl(post)}" class="mini__item">
+            <span class="mini__title">${post.title}</span>
+            <time class="mini__meta" datetime="${new Date(post.date).toISOString()}">${date}</time>
+          </a>
+        </li>`;
+  }
+
+  private miniProject(project: Project): string {
+    return `
+        <li>
+          <a href="${this.url(`/projects/${project.slug}/`)}" class="mini__item mini__item--icon">
+            ${this.projectIcon(project)}
+            <span class="mini__title">${project.title}</span>
+            <span class="mini__meta">${project.description}</span>
+          </a>
+        </li>`;
+  }
+
+  private projectRows(projects: Project[]): string {
+    return this.sortProjects(projects).map((project, i) => this.projectRow(project, i)).join('');
+  }
+
+  private filedUnder(tags: string[] | undefined): string {
+    if (!tags || tags.length === 0) return '';
+    const links = tags
+      .map(tag => `<a href="${this.url(`/tag/${normalizeTagSlug(tag)}/`)}">${tag}</a>`)
+      .join(', ');
+    return `<p class="filed">Filed under ${links}</p>`;
+  }
+
+  private postsByYear(posts: BlogPost[]): string {
+    const years = new Map<number, BlogPost[]>();
+    for (const post of this.sortPosts(posts)) {
+      const year = new Date(post.date).getFullYear();
+      if (!years.has(year)) years.set(year, []);
+      years.get(year)!.push(post);
+    }
+    return [...years]
+      .map(([year, yearPosts]) => `
+    <h2 class="year">${year}</h2>
+    <ul class="list">${yearPosts.map(post => this.postRow(post, false)).join('')}
+    </ul>`)
+      .join('');
+  }
+
+  private page(content: string, title: string, description: string, pagePath: string, bodyClass = ''): string {
+    return this.templates.renderLayout(content, {
+      body_class: bodyClass,
+      page_title: title,
+      page_description: description,
+      page_url: `${this.config.siteUrl}${pagePath}`,
       site_name: this.config.siteName,
       current_year: new Date().getFullYear().toString(),
       base_path: this.config.basePath
     });
+  }
 
+  generateHome(posts: BlogPost[], projects: Project[]): void {
+    const homeContent = this.templates.render('home', {
+      intro: this.config.intro,
+      intro_sub: this.config.introSub,
+      base_path: this.config.basePath,
+      posts_list: this.sortPosts(posts).slice(0, 3).map(post => this.miniPost(post)).join(''),
+      projects_list: this.sortProjects(projects).slice(0, 3).map(project => this.miniProject(project)).join('')
+    });
+
+    const html = this.page(homeContent, this.config.siteName, this.config.siteDescription, '/', 'is-home');
     this.writeFile(path.join(this.distDir, 'index.html'), html);
   }
 
   generateBlogPost(post: BlogPost): void {
     const postDate = new Date(post.date);
-    const year = postDate.getFullYear();
-    const month = String(postDate.getMonth() + 1).padStart(2, '0');
-
-    const tagsHtml = post.tags && post.tags.length > 0
-      ? '<div class="flex gap-3 text-xs text-dim font-mono">' +
-        post.tags.map(tag => {
-          const slug = normalizeTagSlug(tag);
-          return `<a href="${this.url(`/tag/${slug}/`)}" class="px-2 py-0.5 border border-green">> ${tag}</a>`;
-        }).join('') +
-        '</div>'
-      : '';
+    const words = post.content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
 
     const postContent = this.templates.render('blog-post', {
       title: post.title,
       date_iso: postDate.toISOString(),
-      date_formatted: postDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      tags_html: tagsHtml,
+      date_formatted: this.formatDate(post.date, { year: 'numeric', month: 'long', day: 'numeric' }),
+      reading_time: `${Math.max(1, Math.round(words / 220))} min read`,
+      tags_html: this.filedUnder(post.tags),
       content: post.content,
       base_path: this.config.basePath
     });
 
-    const html = this.templates.renderLayout(postContent, {
-      page_title: `${post.title} - ${this.config.siteName}`,
-      page_description: post.description || post.title,
-      site_name: this.config.siteName,
-      current_year: new Date().getFullYear().toString(),
-      base_path: this.config.basePath
-    });
-
-    const outputPath = path.join(this.distDir, 'blog', String(year), month, post.slug, 'index.html');
-    this.writeFile(outputPath, html);
+    const pagePath = this.postPath(post);
+    const html = this.page(postContent, `${post.title} — ${this.config.siteName}`, post.description || post.title, pagePath);
+    this.writeFile(path.join(this.distDir, pagePath, 'index.html'), html);
   }
 
   generateBlogIndex(posts: BlogPost[]): void {
-    const sortedPosts = [...posts].sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    });
-
+    const sortedPosts = this.sortPosts(posts);
     const postsPerPage = 20;
     const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
 
     for (let page = 1; page <= totalPages; page++) {
       const start = (page - 1) * postsPerPage;
-      const end = start + postsPerPage;
-      const pagePosts = sortedPosts.slice(start, end);
-
-      const postsListHtml = pagePosts.map(post => {
-        const postDate = new Date(post.date);
-        const year = postDate.getFullYear();
-        const month = String(postDate.getMonth() + 1).padStart(2, '0');
-        const url = this.url(`/blog/${year}/${month}/${post.slug}/`);
-        const dateFormatted = postDate.toISOString().split('T')[0];
-
-        return `
-          <article class="group">
-            <div class="flex flex-col md:flex-row md:items-baseline gap-2 mb-1">
-              <span class="text-dim text-xs">[${dateFormatted}]</span>
-              <h3 class="text-lg font-bold inline-block">
-                <a href="${url}" class="px-1 -ml-1 inline-block">${post.title}</a>
-              </h3>
-            </div>
-            ${post.description ? `<p class="text-sm opacity-80 pl-0 md:pl-24">${post.description}</p>` : ''}
-          </article>
-        `;
-      }).join('');
+      const pagePosts = sortedPosts.slice(start, start + postsPerPage);
 
       let paginationHtml = '';
       if (totalPages > 1) {
-        const links = [];
-        if (page > 1) {
-          const prevUrl = page === 2 ? this.url('/blog/') : this.url(`/blog/page/${page - 1}/`);
-          links.push(`<a href="${prevUrl}" class="inline-block border border-green px-8 py-3 transition-all uppercase tracking-widest text-sm">Previous</a>`);
-        }
-        if (page < totalPages) {
-          links.push(`<a href="${this.url(`/blog/page/${page + 1}/`)}" class="inline-block border border-green px-8 py-3 transition-all uppercase tracking-widest text-sm">Next</a>`);
-        }
-        paginationHtml = `<div class="flex gap-4 justify-center mt-12">${links.join('')}</div>`;
+        const newer = page > 1
+          ? `<a href="${page === 2 ? this.url('/blog/') : this.url(`/blog/page/${page - 1}/`)}">← Newer</a>`
+          : '<span></span>';
+        const older = page < totalPages
+          ? `<a href="${this.url(`/blog/page/${page + 1}/`)}">Older →</a>`
+          : '<span></span>';
+        paginationHtml = `<nav class="pagination" aria-label="Pagination">${newer}${older}</nav>`;
       }
 
       const indexContent = this.templates.render('blog-index', {
-        posts_list: postsListHtml,
-        pagination: paginationHtml,
-        base_path: this.config.basePath
+        posts_by_year: this.postsByYear(pagePosts),
+        pagination: paginationHtml
       });
 
-      const html = this.templates.renderLayout(indexContent, {
-        page_title: page === 1 ? `Blog - ${this.config.siteName}` : `Blog (Page ${page}) - ${this.config.siteName}`,
-        page_description: 'Blog posts',
-        site_name: this.config.siteName,
-        current_year: new Date().getFullYear().toString(),
-        base_path: this.config.basePath
-      });
-
-      const outputPath = page === 1
-        ? path.join(this.distDir, 'blog', 'index.html')
-        : path.join(this.distDir, 'blog', 'page', String(page), 'index.html');
-
-      this.writeFile(outputPath, html);
+      const pagePath = page === 1 ? '/blog/' : `/blog/page/${page}/`;
+      const title = page === 1 ? `Writing — ${this.config.siteName}` : `Writing, page ${page} — ${this.config.siteName}`;
+      const html = this.page(indexContent, title, `Writing by ${this.config.siteName}`, pagePath);
+      this.writeFile(path.join(this.distDir, pagePath, 'index.html'), html);
     }
   }
 
   generateProject(project: Project): void {
-    const tagsHtml = project.tags && project.tags.length > 0
-      ? '<div class="flex gap-3 text-xs text-dim font-mono">' +
-        project.tags.map(tag => {
-          const slug = normalizeTagSlug(tag);
-          return `<a href="${this.url(`/tag/${slug}/`)}" class="px-2 py-0.5 border border-green">> ${tag}</a>`;
-        }).join('') +
-        '</div>'
-      : '';
-
-    const demoLink = project.demo
-      ? `<a href="${project.demo}" target="_blank" rel="noopener noreferrer" class="inline-block border border-green px-8 py-3 transition-all uppercase tracking-widest text-sm text-center">View Demo</a>`
-      : '';
+    const linkRow = (href: string, leading: string, label: string, meta: string) => `
+    <li>
+      <a href="${href}" class="link-row">
+        ${leading}
+        <span>${label}</span>
+        <span class="link-row__meta">${meta} <span aria-hidden="true">↗</span></span>
+      </a>
+    </li>`;
+    const ring = '<span class="link-row__dot" aria-hidden="true"></span>';
+    const links = [
+      project.website ? linkRow(project.website, ring, 'Website', project.website.replace(/^https?:\/\//, '').replace(/\/$/, '')) : '',
+      project.github ? linkRow(project.github, GITHUB_MARK, 'Source code', 'GitHub') : '',
+      project.demo ? linkRow(project.demo, ring, 'Live demo', 'Open') : ''
+    ].join('');
 
     const projectContent = this.templates.render('project', {
+      icon: this.projectIcon(project, 'lg'),
       title: project.title,
       description: project.description,
-      github: project.github,
-      demo_link: demoLink,
-      tags_html: tagsHtml,
+      links,
+      tags_html: this.filedUnder(project.tags),
       content: project.content,
       base_path: this.config.basePath
     });
 
-    const html = this.templates.renderLayout(projectContent, {
-      page_title: `${project.title} - ${this.config.siteName}`,
-      page_description: project.description,
-      site_name: this.config.siteName,
-      current_year: new Date().getFullYear().toString(),
-      base_path: this.config.basePath
-    });
-
-    const outputPath = path.join(this.distDir, 'projects', project.slug, 'index.html');
-    this.writeFile(outputPath, html);
+    const pagePath = `/projects/${project.slug}/`;
+    const html = this.page(projectContent, `${project.title} — ${this.config.siteName}`, project.description, pagePath);
+    this.writeFile(path.join(this.distDir, pagePath, 'index.html'), html);
   }
 
   generateProjectsIndex(projects: Project[]): void {
-    const sortedProjects = [...projects].sort((a, b) => {
-      if (a.order !== undefined && b.order !== undefined) {
-        return a.order - b.order;
-      }
-      if (a.order !== undefined) return -1;
-      if (b.order !== undefined) return 1;
-      return a.title.localeCompare(b.title);
-    });
-
-    const projectsListHtml = sortedProjects.map(project => {
-      const statusBadge = project.order === 0 ? 'PUBLIC' : (project.demo ? 'BETA' : 'ARCHIVED');
-      const projectTitle = project.title.toUpperCase().replace(/\s+/g, '_');
-
-      return `
-        <div class="border border-green p-6 hover:bg-dim transition-colors group">
-          <div class="flex justify-between items-start gap-4 mb-4">
-            <h3 class="text-xl font-bold group-hover:underline decoration-2 underline-offset-4 flex-1 min-w-0 truncate">
-              <a href="${this.url(`/projects/${project.slug}/`)}" title="${projectTitle}">${projectTitle}</a>
-            </h3>
-            <span class="text-xs border border-green px-2 py-0.5 text-dim flex-shrink-0">${statusBadge}</span>
-          </div>
-          <p class="text-sm mb-6 leading-relaxed opacity-90">${project.description}</p>
-          <div class="flex gap-3 text-xs text-dim font-mono flex-wrap">
-            ${project.tags ? project.tags.map(tag => `<span>> ${tag.toUpperCase()}</span>`).join('') : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-
     const indexContent = this.templates.render('projects-index', {
-      projects_list: projectsListHtml,
-      base_path: this.config.basePath
+      projects_list: this.projectRows(projects)
     });
 
-    const html = this.templates.renderLayout(indexContent, {
-      page_title: `Projects - ${this.config.siteName}`,
-      page_description: 'My projects',
-      site_name: this.config.siteName,
-      current_year: new Date().getFullYear().toString(),
-      base_path: this.config.basePath
-    });
-
+    const html = this.page(indexContent, `Projects — ${this.config.siteName}`, `Projects by ${this.config.siteName}`, '/projects/');
     this.writeFile(path.join(this.distDir, 'projects', 'index.html'), html);
   }
 
@@ -310,67 +280,23 @@ export class SiteGenerator {
     }
 
     for (const [slug, data] of tagMap) {
-      const sortedPosts = [...data.posts].sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      });
+      const postsSection = data.posts.length > 0
+        ? `
+<section class="block">
+  <h2 class="label">Writing</h2>
+  <ul class="list">${this.sortPosts(data.posts).map(post => this.postRow(post)).join('')}
+  </ul>
+</section>`
+        : '';
 
-      const sortedProjects = [...data.projects].sort((a, b) => {
-        if (a.order !== undefined && b.order !== undefined) {
-          return a.order - b.order;
-        }
-        if (a.order !== undefined) return -1;
-        if (b.order !== undefined) return 1;
-        return a.title.localeCompare(b.title);
-      });
-
-      let postsSection = '';
-      if (sortedPosts.length > 0) {
-        const postsHtml = sortedPosts.map(post => {
-          const postDate = new Date(post.date);
-          const year = postDate.getFullYear();
-          const month = String(postDate.getMonth() + 1).padStart(2, '0');
-          const url = this.url(`/blog/${year}/${month}/${post.slug}/`);
-
-          return `
-            <article class="mb-4">
-              <h3 class="text-lg font-semibold">
-                <a href="${url}">${post.title}</a>
-              </h3>
-              <time datetime="${postDate.toISOString()}" class="text-gray-600 text-sm">
-                ${postDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </time>
-            </article>
-          `;
-        }).join('');
-
-        postsSection = `
-          <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-4">Blog Posts</h2>
-            ${postsHtml}
-          </section>
-        `;
-      }
-
-      let projectsSection = '';
-      if (sortedProjects.length > 0) {
-        const projectsHtml = sortedProjects.map(project => {
-          return `
-            <article class="mb-4">
-              <h3 class="text-lg font-semibold">
-                <a href="${this.url(`/projects/${project.slug}/`)}">${project.title}</a>
-              </h3>
-              <p class="text-gray-700">${project.description}</p>
-            </article>
-          `;
-        }).join('');
-
-        projectsSection = `
-          <section>
-            <h2 class="text-2xl font-bold mb-4">Projects</h2>
-            ${projectsHtml}
-          </section>
-        `;
-      }
+      const projectsSection = data.projects.length > 0
+        ? `
+<section class="block">
+  <h2 class="label">Projects</h2>
+  <ul class="list">${this.projectRows(data.projects)}
+  </ul>
+</section>`
+        : '';
 
       const tagContent = this.templates.render('tag', {
         tag_name: data.displayName,
@@ -378,35 +304,22 @@ export class SiteGenerator {
         projects_section: projectsSection
       });
 
-      const html = this.templates.renderLayout(tagContent, {
-        page_title: `${data.displayName} - ${this.config.siteName}`,
-        page_description: `Posts and projects tagged with ${data.displayName}`,
-        site_name: this.config.siteName,
-        current_year: new Date().getFullYear().toString(),
-        base_path: this.config.basePath
-      });
-
+      const pagePath = `/tag/${slug}/`;
+      const html = this.page(tagContent, `${data.displayName} — ${this.config.siteName}`, `Posts and projects tagged ${data.displayName}`, pagePath);
       this.writeFile(path.join(this.distDir, 'tag', slug, 'index.html'), html);
     }
   }
 
   generateRSS(posts: BlogPost[]): void {
-    const sortedPosts = [...posts]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 20);
-
-    const items = sortedPosts.map(post => {
-      const postDate = new Date(post.date);
-      const year = postDate.getFullYear();
-      const month = String(postDate.getMonth() + 1).padStart(2, '0');
-      const url = `${this.config.siteUrl}/blog/${year}/${month}/${post.slug}/`;
-
+    const items = this.sortPosts(posts).slice(0, 20).map(post => {
+      const url = `${this.config.siteUrl}${this.postPath(post)}`;
       return `
     <item>
       <title>${this.escapeXml(post.title)}</title>
       <link>${url}</link>
-      <pubDate>${postDate.toUTCString()}</pubDate>
-      <description>${this.escapeXml(post.description || post.title)}</description>
+      <guid>${url}</guid>
+      <pubDate>${new Date(post.date).toUTCString()}</pubDate>
+      <description>${this.escapeXml(post.content)}</description>
     </item>`;
     }).join('');
 
@@ -432,11 +345,7 @@ export class SiteGenerator {
 
     // Blog posts
     for (const post of posts) {
-      const postDate = new Date(post.date);
-      const year = postDate.getFullYear();
-      const month = String(postDate.getMonth() + 1).padStart(2, '0');
-      const url = `${this.config.siteUrl}/blog/${year}/${month}/${post.slug}/`;
-      urls.push(this.sitemapUrl(url, postDate));
+      urls.push(this.sitemapUrl(`${this.config.siteUrl}${this.postPath(post)}`, new Date(post.date)));
     }
 
     // Projects index

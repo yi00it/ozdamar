@@ -1,10 +1,11 @@
 ---
 title: "Saharos-Kanban"
 slug: "saharos-kanban"
-description: "A lightweight, customizable Kanban board component for modern web applications"
+description: "A lightweight, customizable Kanban board component."
 github: "https://github.com/yi00it/saharos-kanban"
 tags: ["react", "kanban", "component", "npm"]
-order: 1
+order: 2
+icon: "/icons/saharos-kanban.svg"
 ---
 
 A flexible Kanban board component built for developers who need drag-and-drop task management in their applications. Designed to be easy to integrate and highly customizable to fit your project's needs.

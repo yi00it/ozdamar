@@ -1,34 +1,21 @@
-<article class="max-w-3xl fade-reveal opacity-0 transition-opacity duration-700">
-  <nav class="mb-6 text-sm text-dim">
-    <div class="flex flex-wrap items-center gap-2">
-      <a href="{{base_path}}/">[ / ]</a>
-      <span>></span>
-      <a href="{{base_path}}/projects/">[ projects ]</a>
-      <span>></span>
-      <span>[ {{title}} ]</span>
+<article>
+  <header class="icon-head">
+    {{icon}}
+    <div>
+      <h1 class="title">{{title}}</h1>
+      <p class="lede">{{description}}</p>
     </div>
-  </nav>
-
-  <div class="flex items-center gap-3 mb-8">
-    <span class="text-dim">root@ozdamar:~$</span>
-    <h2 class="text-xl font-bold decoration-dotted underline underline-offset-4">cat ./projects/{{title}}</h2>
-  </div>
-
-  <header class="mb-12 border border-green p-8">
-    <h1 class="text-3xl md:text-4xl font-bold mb-4 glow-text">{{title}}</h1>
-    <p class="text-lg mb-6 opacity-90">{{description}}</p>
-
-    <div class="flex flex-col md:flex-row gap-4 mb-6">
-      <a href="{{github}}" target="_blank" rel="noopener noreferrer" class="inline-block border border-green px-8 py-3 hover:bg-green-400 hover:text-black hover:font-bold transition-all uppercase tracking-widest text-sm text-center">
-        Access Github
-      </a>
-      {{demo_link}}
-    </div>
-
-    {{tags_html}}
   </header>
 
-  <div class="prose max-w-none">
+  <div class="prose">
     {{content}}
   </div>
+
+  <ul class="links">
+    {{links}}
+  </ul>
+
+  {{tags_html}}
 </article>
+
+<a href="{{base_path}}/projects/" class="back">← Projects</a>

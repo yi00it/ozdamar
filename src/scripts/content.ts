@@ -17,10 +17,12 @@ export interface Project {
   title: string;
   slug: string;
   description: string;
-  github: string;
+  github?: string;
+  website?: string;
   tags?: string[];
   demo?: string;
   order?: number;
+  icon?: string;
   content: string;
   filePath: string;
 }
@@ -49,7 +51,7 @@ export class ContentParser {
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const { data, content } = matter(fileContent);
 
-    if (!data.title || !data.slug || !data.description || !data.github) {
+    if (!data.title || !data.slug || !data.description || !(data.github || data.website)) {
       throw new Error(`Missing required frontmatter in ${filePath}`);
     }
 
@@ -58,9 +60,11 @@ export class ContentParser {
       slug: data.slug,
       description: data.description,
       github: data.github,
+      website: data.website,
       tags: data.tags || [],
       demo: data.demo,
       order: data.order,
+      icon: data.icon,
       content: marked(content) as string,
       filePath
     };

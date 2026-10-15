@@ -1,10 +1,11 @@
 ---
 title: "IAZ-Dashboard"
 slug: "iaz-dashboard"
-description: "A modern dashboard framework with pre-built components and layouts for rapid application development"
+description: "A dashboard framework with ready-made components and layouts."
 github: "https://github.com/yi00it/iaz-dashboard"
 tags: ["dashboard", "react", "components", "ui"]
-order: 2
+order: 3
+icon: "/icons/iaz-dashboard.svg"
 ---
 
 A comprehensive dashboard solution featuring reusable components, responsive layouts, and modern design patterns. Built to accelerate the development of admin panels and data visualization interfaces.

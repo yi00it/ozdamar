@@ -1,10 +1,11 @@
 ---
 title: "Saharos"
 slug: "saharos"
-description: "An ambitious new project in active development - stay tuned for updates"
+description: "Something new for construction. In development."
 github: "https://github.com/yi00it/saharos"
 tags: ["in-development", "coming-soon"]
-order: 3
+order: 4
+icon: "/icons/saharos.png"
 ---
 
 ## Coming Soon

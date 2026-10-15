@@ -24,7 +24,7 @@ export class TemplateEngine {
 
     for (const [key, value] of Object.entries(data)) {
       const placeholder = `{{${key}}}`;
-      template = template.replace(new RegExp(placeholder, 'g'), value);
+      template = template.replace(new RegExp(placeholder, 'g'), () => value);
     }
 
     return template;

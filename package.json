@@ -5,7 +5,9 @@
   "main": "dist/index.html",
   "scripts": {
     "build": "ts-node src/build.ts",
-    "dev": "ts-node src/build.ts --watch"
+    "dev": "ts-node src/build.ts --watch",
+    "serve": "ts-node src/serve.ts",
+    "preview": "npm run build && npm run serve"
   },
   "keywords": [
     "static-site",

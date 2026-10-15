@@ -1,21 +1,8 @@
-<!-- Logs / Blog -->
-<section id="logs" class="mb-32 fade-reveal opacity-0 transition-opacity duration-700">
-  <nav class="mb-6 text-sm text-dim">
-    <div class="flex flex-wrap items-center gap-2">
-      <a href="{{base_path}}/">[ / ]</a>
-      <span>></span>
-      <span>[ logs ]</span>
-    </div>
-  </nav>
+<header class="page-head">
+  <p class="eyebrow">Archive</p>
+  <h1 class="title">Writing</h1>
+</header>
 
-  <div class="flex items-center gap-3 mb-8">
-    <span class="text-dim">root@ozdamar:~$</span>
-    <h2 class="text-xl font-bold decoration-dotted underline underline-offset-4">tail -n 20 ./logs/thoughts.txt</h2>
-  </div>
+{{posts_by_year}}
 
-  <div class="space-y-6">
-    {{posts_list}}
-  </div>
-
-  {{pagination}}
-</section>
+{{pagination}}
