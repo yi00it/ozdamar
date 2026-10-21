@@ -9,7 +9,8 @@ A custom static site generator built with TypeScript for personal websites and b
 - 🏷️ Tag system for organizing content
 - 📡 RSS feed generation
 - 🗺️ Automatic sitemap generation
-- 🎨 Tailwind CSS integration
+- 🎨 One hand-written stylesheet, minified with Lightning CSS
+- 🖼️ Share cards and home-screen icons rendered at build time
 - ⚡ Fast static site generation
 - 🔄 GitHub Pages deployment via GitHub Actions
 
@@ -17,7 +18,9 @@ A custom static site generator built with TypeScript for personal websites and b
 
 - **TypeScript** - Type-safe development
 - **Node.js** - Runtime environment
-- **Tailwind CSS** - Utility-first CSS framework
+- **Lightning CSS** - CSS minifier
+- **resvg** - Renders share cards (`src/og/` holds the Inter files it uses)
+- **highlight.js** - Code highlighting at build time
 - **Marked** - Markdown parser
 - **Gray Matter** - YAML frontmatter parser
 

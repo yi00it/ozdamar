@@ -1,9 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
+import { transform } from 'lightningcss';
 import { TemplateEngine } from './scripts/template';
 import { ContentParser, validateUniquenessSlugs } from './scripts/content';
 import { SiteGenerator, SiteConfig } from './scripts/generator';
+import { renderOgCards, renderAppIcons } from './scripts/og';
 
 const ROOT_DIR = path.join(__dirname, '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
@@ -46,20 +47,28 @@ function copyPublicAssets(): void {
   }
 }
 
-function buildTailwindCSS(): void {
-  console.log('Building Tailwind CSS...');
+// Browsers the stylesheet is written for: all support light-dark(). Naming them
+// also stops the minifier folding animation-timeline into the animation
+// shorthand, which browsers reject.
+const CSS_TARGETS = {
+  chrome: 123 << 16,
+  safari: (17 << 16) | (5 << 8),
+  firefox: 120 << 16
+};
+
+// One hand-written stylesheet, minified
+function buildCSS(): void {
+  console.log('Building CSS...');
 
   fs.mkdirSync(OUTPUT_CSS_DIR, { recursive: true });
-
-  try {
-    execSync(
-      `npx tailwindcss -i ${STYLES_PATH} -o ${OUTPUT_CSS_PATH} --minify`,
-      { stdio: 'inherit' }
-    );
-  } catch (error) {
-    console.error('Error building Tailwind CSS:', error);
-    throw error;
-  }
+  const { code, warnings } = transform({
+    filename: STYLES_PATH,
+    code: fs.readFileSync(STYLES_PATH),
+    minify: true,
+    targets: CSS_TARGETS
+  });
+  for (const warning of warnings) console.warn('CSS:', warning.message);
+  fs.writeFileSync(OUTPUT_CSS_PATH, code);
 }
 
 function loadTemplates(templates: TemplateEngine): void {
@@ -72,6 +81,7 @@ function loadTemplates(templates: TemplateEngine): void {
   templates.loadTemplate('tag', TEMPLATES_DIR);
   templates.loadTemplate('shelf', TEMPLATES_DIR);
   templates.loadTemplate('uses', TEMPLATES_DIR);
+  templates.loadTemplate('404', TEMPLATES_DIR);
   templates.loadXMLTemplate('rss', TEMPLATES_DIR);
   templates.loadXMLTemplate('sitemap', TEMPLATES_DIR);
 }
@@ -87,8 +97,8 @@ async function build(): Promise<void> {
   console.log('Copying public assets...');
   copyPublicAssets();
 
-  // Step 3: Build Tailwind CSS
-  buildTailwindCSS();
+  // Step 3: Build CSS
+  buildCSS();
 
   // Step 4: Load templates
   console.log('Loading templates...');
@@ -152,6 +162,13 @@ async function build(): Promise<void> {
     generator.generateTagPages(posts, projects);
     generator.generateSitemap(posts, projects);
   }
+
+  generator.generateNotFound();
+
+  // Step 8: Share cards and home-screen icons
+  console.log(`Rendering ${generator.ogCards.length} share cards...`);
+  renderOgCards(generator.ogCards, DIST_DIR, PUBLIC_DIR);
+  renderAppIcons(DIST_DIR, config.siteName);
 
   console.log('Build completed successfully!');
 }

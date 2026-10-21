@@ -1,20 +1,20 @@
 ---
 title: "Saharos"
 slug: "saharos"
-description: "Something new for construction. In development."
+description: "Software for running construction projects. In development."
 github: "https://github.com/yi00it/saharos"
-tags: ["in-development", "coming-soon"]
+tags: ["in-development", "construction"]
 order: 5
 icon: "/icons/saharos.png"
+active: true
+specs:
+  Status: "In development"
+  Field: "Construction"
+  Stack: "TypeScript, PostgreSQL"
+  Started: "December 2025"
+  Source: "Private"
 ---
 
-## Coming Soon
+Saharos is software for running construction projects, built by someone who runs them.
 
-Something exciting is brewing. Saharos is currently in active development and will be unveiled soon.
-
-This project combines several innovative ideas and approaches to solve real-world problems in a unique way. More details will be shared as development progresses.
-
-**Status:** Work in Progress
-**Expected:** TBD
-
-Stay tuned for updates!
+It's in development and private for now. This page will say more when there's something to show.

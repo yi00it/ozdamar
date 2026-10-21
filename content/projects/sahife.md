@@ -6,6 +6,13 @@ website: "https://sahife.app"
 tags: ["productivity", "privacy", "local-first"]
 order: 1
 icon: "/icons/sahife.svg"
+image: "/shots/sahife.jpg"
+specs:
+  Status: "Private alpha"
+  Platform: "Web"
+  Storage: "Local-first, synced in the background"
+  Encryption: "End-to-end"
+  Price: "Free"
 ---
 
 Sahife is a calm, private, fast task manager for everyday plans. The name comes from an old word for a page, a written sheet.

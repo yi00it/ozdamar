@@ -3,35 +3,83 @@
    One column, precise type, warm paper, a single orange light.
    ------------------------------------------------------------------ */
 
-:root {
-  --paper: #f3f2ee;
-  --ink: #161615;
-  --soft: #3d3c39;
-  --quiet: #6b6963;
-  --rule: #dcdad3;
-  --well: #e8e6e0;
-  --accent: #ef5a0c;
-  --accent-text: #b5420b;
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/InterVariable.woff2") format("woff2");
+}
 
+@font-face {
+  font-family: "Inter";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/InterVariable-Italic.woff2") format("woff2");
+}
+
+:root {
+  /* Follows the system unless a theme is chosen in the footer */
+  color-scheme: light dark;
+
+  /* Colour: each token carries its light and dark value */
+  --paper: light-dark(#f3f2ee, #121211);
+  --ink: light-dark(#161615, #edece8);
+  --soft: light-dark(#3d3c39, #c9c7c0);
+  --quiet: light-dark(#6b6963, #96948d);
+  --rule: light-dark(#dcdad3, #2c2b29);
+  --well: light-dark(#e8e6e0, #1e1d1c);
+  --raised: light-dark(#fbfaf7, #333230);
+  --accent: light-dark(#ef5a0c, #ff6a1c);
+  --accent-text: light-dark(#b5420b, #ff8d4d);
+  --shade: light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.5));
+  --edge: light-dark(rgb(0 0 0 / 0.06), rgb(255 255 255 / 0.06));
+  --sheen: light-dark(rgb(255 255 255 / 0), rgb(255 255 255 / 0.08));
+
+  /* Type: six sizes, nothing in between */
+  --t-label: 11px;
+  --t-meta: 13px;
+  --t-small: 15px;
+  --t-body: 17px;
+  --t-lede: 21px;
+  --t-title: clamp(32px, 5.4vw, 44px);
+  --t-hero: clamp(40px, 7.5vw, 64px);
+
+  /* Space: a 4px grid */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  /* One device pixel on retina screens */
+  --hair: 1px;
 
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --measure: 44rem;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root[data-theme="light"] {
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --paper: #121211;
-  --ink: #edece8;
-  --soft: #c9c7c0;
-  --quiet: #96948d;
-  --rule: #2a2927;
-  --well: #1e1d1c;
-  --accent: #ff6a1c;
-  --accent-text: #ff8d4d;
   color-scheme: dark;
+}
+
+@media (min-resolution: 2dppx) {
+  :root {
+    --hair: 0.5px;
+  }
 }
 
 /* ------------------------------------------------------------------
@@ -54,7 +102,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 17px;
+  font-size: var(--t-body);
   line-height: 1.6;
   font-optical-sizing: auto;
   font-feature-settings: "cv11", "ss03";
@@ -100,7 +148,40 @@ figure {
 .wrap {
   max-width: var(--measure);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--s-5);
+}
+
+/* ------------------------------------------------------------------
+   The status light: the site's one ornament
+   ------------------------------------------------------------------ */
+.status-dot {
+  display: inline-block;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent);
+  animation: breathe 4.8s ease-in-out infinite;
+}
+
+/* The light is off */
+.status-dot--off {
+  background: var(--rule);
+  animation: none;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 6px 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
 }
 
 /* ------------------------------------------------------------------
@@ -113,9 +194,10 @@ figure {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 18px 0;
-  margin-top: 22px;
+  gap: var(--s-5);
+  padding: var(--s-4) 0;
+  margin-top: var(--s-5);
+  view-transition-name: masthead;
 }
 
 /* Frosted band, full width, shown once the page scrolls */
@@ -127,7 +209,7 @@ figure {
   background: color-mix(in srgb, var(--paper) 78%, transparent);
   -webkit-backdrop-filter: blur(18px) saturate(1.6);
   backdrop-filter: blur(18px) saturate(1.6);
-  border-bottom: 1px solid var(--rule);
+  border-bottom: var(--hair) solid var(--rule);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -138,7 +220,7 @@ figure {
 
 .brand {
   white-space: nowrap;
-  font-size: 19px;
+  font-size: var(--t-body);
   font-weight: 650;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -174,7 +256,7 @@ figure {
   z-index: 1;
   padding: 6px 14px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: var(--t-meta);
   font-weight: 500;
   color: var(--quiet);
   transition: color 0.2s ease;
@@ -185,16 +267,22 @@ figure {
   color: var(--ink);
 }
 
+/* Raised like a macOS segment: lighter than its track, with a top sheen in dark */
 .nav a[aria-current],
 .segmented button[aria-selected="true"],
+.segmented button[aria-checked="true"],
 .pill {
-  background: var(--paper);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 0 0 0.5px rgb(0 0 0 / 0.06);
+  background: var(--raised);
+  box-shadow:
+    inset 0 0.5px 0 var(--sheen),
+    0 1px 2px var(--shade),
+    0 0 0 0.5px var(--edge);
 }
 
 /* With JS a single pill slides between items */
 .has-pill .nav a[aria-current],
-.has-pill .segmented button[aria-selected="true"] {
+.has-pill .segmented button[aria-selected="true"],
+.has-pill .segmented button[aria-checked="true"] {
   background: none;
   box-shadow: none;
 }
@@ -214,6 +302,10 @@ figure {
     opacity 0.25s ease;
 }
 
+.nav .pill {
+  view-transition-name: nav-pill;
+}
+
 .pill.is-on {
   opacity: 1;
 }
@@ -222,15 +314,38 @@ figure {
   transition: none;
 }
 
+/* Reading progress on a post: a hairline of light under the header */
+@supports (animation-timeline: scroll()) {
+  .is-post .masthead::after {
+    content: "";
+    position: absolute;
+    left: calc(50% - 50vw);
+    bottom: 0;
+    width: 100vw;
+    height: 1px;
+    background: var(--accent);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    animation: progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
 main {
-  padding-top: 72px;
+  padding-top: var(--s-8);
 }
 
 /* ------------------------------------------------------------------
    Hero
    ------------------------------------------------------------------ */
 .hero {
-  font-size: clamp(40px, 7.5vw, 64px);
+  font-size: var(--t-hero);
   max-width: 36rem;
   line-height: 1.02;
   font-weight: 600;
@@ -244,12 +359,45 @@ main {
 
 .hero__sub {
   max-width: 27rem;
-  margin-top: 16px;
-  font-size: clamp(18px, 2.4vw, 21px);
+  margin-top: var(--s-4);
+  font-size: var(--t-lede);
   line-height: 1.45;
   letter-spacing: -0.015em;
   color: var(--quiet);
   text-wrap: balance;
+}
+
+/* Now: what the light is on for */
+.now {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+  font-size: var(--t-small);
+}
+
+.now__label {
+  color: var(--quiet);
+}
+
+.now a {
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.now a span {
+  display: inline-block;
+  color: var(--quiet);
+  transition: transform 0.3s var(--ease), color 0.2s ease;
+}
+
+.now a:hover,
+.now a:hover span {
+  color: var(--accent-text);
+}
+
+.now a:hover span {
+  transform: translateX(3px);
 }
 
 /* ------------------------------------------------------------------
@@ -267,25 +415,25 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 56px 0;
+  padding: var(--s-7) 0;
 }
 
 .is-home .colophon {
   margin-top: 0;
-  padding-bottom: 32px;
+  padding-bottom: var(--s-6);
 }
 
 .home__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  margin-top: clamp(44px, 9vh, 80px);
+  gap: var(--s-7);
+  margin-top: clamp(var(--s-7), 9vh, 80px);
 }
 
 .home .label {
-  padding-bottom: 12px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid var(--rule);
+  padding-bottom: var(--s-3);
+  margin-bottom: var(--s-1);
+  border-bottom: var(--hair) solid var(--rule);
 }
 
 .mini {
@@ -297,11 +445,11 @@ main {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 9px 0;
+  padding: var(--s-2) 0;
 }
 
 .mini__title {
-  font-size: 15.5px;
+  font-size: var(--t-small);
   font-weight: 500;
   letter-spacing: -0.012em;
   line-height: 1.4;
@@ -309,7 +457,7 @@ main {
 }
 
 .mini__meta {
-  font-size: 13.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
   line-height: 1.45;
   font-variant-numeric: tabular-nums;
@@ -318,7 +466,7 @@ main {
 .mini__item--icon {
   display: grid;
   grid-template-columns: 32px 1fr;
-  column-gap: 14px;
+  column-gap: var(--s-3);
   align-items: start;
 }
 
@@ -347,24 +495,44 @@ main {
   color: var(--accent-text);
 }
 
+/* An active project wears the light beside its name */
+.mini__title .status-dot,
+.row__title .status-dot {
+  width: 6px;
+  height: 6px;
+  margin-left: var(--s-2);
+  vertical-align: 0.15em;
+}
+
 .home .more {
-  margin-top: 10px;
-  font-size: 14px;
+  margin-top: var(--s-2);
+  font-size: var(--t-meta);
 }
 
 /* ------------------------------------------------------------------
    Project icons
    ------------------------------------------------------------------ */
 .icon {
+  --size: 32px;
   position: relative;
   display: block;
   flex: none;
+  width: var(--size);
+  height: var(--size);
   overflow: hidden;
   border-radius: 22%;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.08);
+  box-shadow: 0 0 0 1px var(--edge), 0 1px 2px var(--shade);
   transition:
     transform 0.55s var(--spring),
     box-shadow 0.45s var(--ease);
+}
+
+/* Continuous-curvature corners where the browser can draw them */
+@supports (corner-shape: squircle) {
+  .icon {
+    border-radius: 32%;
+    corner-shape: squircle;
+  }
 }
 
 .icon img {
@@ -383,15 +551,8 @@ main {
   pointer-events: none;
 }
 
-.icon--sm {
-  width: 32px;
-  height: 32px;
-}
-
 .icon--lg {
-  width: 56px;
-  height: 56px;
-  margin-bottom: 24px;
+  --size: 56px;
 }
 
 .icon--letter {
@@ -400,11 +561,7 @@ main {
   background: #1c1c1b;
   color: #d9d7d0;
   font-weight: 600;
-  font-size: 15px;
-}
-
-.icon--lg.icon--letter {
-  font-size: 26px;
+  font-size: calc(var(--size) * 0.46);
 }
 
 /* Keep summaries to two lines */
@@ -420,9 +577,9 @@ main {
 a:hover .icon {
   transform: translateY(-2px) rotate(-6deg) scale(1.1);
   box-shadow:
-    0 0 0 1px rgb(0 0 0 / 0.05),
-    0 4px 8px -2px rgb(0 0 0 / 0.18),
-    0 12px 20px -8px rgb(0 0 0 / 0.3);
+    0 0 0 1px var(--edge),
+    0 4px 8px -2px var(--shade),
+    0 12px 20px -8px var(--shade);
 }
 
 a:hover .icon::after {
@@ -434,15 +591,15 @@ a:hover .icon::after {
    Sections
    ------------------------------------------------------------------ */
 .block {
-  margin-top: 104px;
+  margin-top: var(--s-9);
 }
 
 .label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
-  font-size: 11px;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+  font-size: var(--t-label);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -452,8 +609,8 @@ a:hover .icon::after {
 .more {
   display: inline-flex;
   gap: 6px;
-  margin-top: 22px;
-  font-size: 15px;
+  margin-top: var(--s-5);
+  font-size: var(--t-small);
   color: var(--quiet);
   transition: color 0.2s ease;
 }
@@ -472,16 +629,17 @@ a:hover .icon::after {
 
 /* Spec sheet */
 .spec {
-  border-top: 1px solid var(--rule);
+  max-width: 38rem;
+  border-top: var(--hair) solid var(--rule);
 }
 
 .spec div {
   display: grid;
   grid-template-columns: 9.5rem 1fr;
-  gap: 4px 20px;
-  padding: 13px 0;
-  border-bottom: 1px solid var(--rule);
-  font-size: 15px;
+  gap: var(--s-1) var(--s-5);
+  padding: var(--s-3) 0;
+  border-bottom: var(--hair) solid var(--rule);
+  font-size: var(--t-small);
 }
 
 .spec dt {
@@ -505,19 +663,19 @@ a:hover .icon::after {
 .list {
   list-style: none;
   padding: 0;
-  border-top: 1px solid var(--rule);
+  border-top: var(--hair) solid var(--rule);
 }
 
 .list li {
-  border-bottom: 1px solid var(--rule);
+  border-bottom: var(--hair) solid var(--rule);
 }
 
 .row {
   position: relative;
   display: grid;
   grid-template-columns: 7.5rem 1fr;
-  gap: 2px 20px;
-  padding: 15px 28px 15px 0;
+  gap: 2px var(--s-5);
+  padding: var(--s-4) var(--s-6) var(--s-4) 0;
   align-items: baseline;
 }
 
@@ -525,7 +683,7 @@ a:hover .icon::after {
   content: "→";
   position: absolute;
   right: 2px;
-  top: 15px;
+  top: var(--s-4);
   color: var(--accent-text);
   opacity: 0;
   transform: translateX(-6px);
@@ -536,13 +694,6 @@ a:hover .icon::after {
 .row:focus-visible::after {
   opacity: 1;
   transform: none;
-}
-
-.row__meta {
-  font-size: 14px;
-  color: var(--quiet);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 .row__title {
@@ -557,7 +708,7 @@ a:hover .icon::after {
 
 .row__desc {
   grid-column: 2;
-  font-size: 15px;
+  font-size: var(--t-small);
   color: var(--quiet);
   line-height: 1.5;
 }
@@ -572,7 +723,7 @@ a:hover .icon::after {
 
 .row--icon {
   grid-template-columns: 32px 1fr;
-  column-gap: 16px;
+  column-gap: var(--s-4);
 }
 
 .row--icon .icon {
@@ -582,8 +733,8 @@ a:hover .icon::after {
 }
 
 .year {
-  margin: 56px 0 14px;
-  font-size: 11px;
+  margin: var(--s-7) 0 var(--s-3);
+  font-size: var(--t-label);
   font-weight: 600;
   letter-spacing: 0.14em;
   color: var(--quiet);
@@ -599,12 +750,12 @@ a:hover .icon::after {
    ------------------------------------------------------------------ */
 .page-head {
   max-width: 38rem;
-  margin-bottom: 64px;
+  margin-bottom: var(--s-8);
 }
 
 .eyebrow {
-  margin-bottom: 14px;
-  font-size: 11px;
+  margin-bottom: var(--s-3);
+  font-size: var(--t-label);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -612,7 +763,7 @@ a:hover .icon::after {
 }
 
 .title {
-  font-size: clamp(32px, 5.4vw, 44px);
+  font-size: var(--t-title);
   line-height: 1.08;
   font-weight: 600;
   letter-spacing: -0.026em;
@@ -620,8 +771,8 @@ a:hover .icon::after {
 }
 
 .lede {
-  margin-top: 18px;
-  font-size: 20px;
+  margin-top: var(--s-4);
+  font-size: var(--t-lede);
   line-height: 1.45;
   letter-spacing: -0.015em;
   color: var(--quiet);
@@ -629,87 +780,92 @@ a:hover .icon::after {
 }
 
 .meta {
-  margin-top: 18px;
-  font-size: 14px;
+  margin-top: var(--s-4);
+  font-size: var(--t-meta);
   color: var(--quiet);
   font-variant-numeric: tabular-nums;
 }
 
 .meta span + span::before {
   content: "·";
-  margin: 0 8px;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 16px;
-  margin-top: 22px;
+  margin: 0 var(--s-2);
 }
 
 .icon-head {
   display: grid;
   grid-template-columns: 56px 1fr;
-  gap: 20px;
+  gap: var(--s-5);
   align-items: center;
   max-width: 40rem;
-  margin-bottom: 64px;
+  margin-bottom: var(--s-8);
 }
-
-.icon-head .icon--lg {
-  width: 56px;
-  height: 56px;
-  margin: 0;
-}
-
 
 .icon-head .lede {
-  margin-top: 4px;
-  font-size: 17px;
+  margin-top: var(--s-1);
+  font-size: var(--t-body);
 }
 
-.icon-head .meta {
-  margin-top: 8px;
+/* A product shot: the project as an object on the page */
+.shot {
+  margin: 0 0 var(--s-8);
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: var(--well);
+  box-shadow:
+    0 0 0 var(--hair) var(--edge),
+    0 2px 4px -2px var(--shade),
+    0 24px 48px -24px var(--shade);
+}
+
+@supports (corner-shape: squircle) {
+  .shot img {
+    border-radius: 20px;
+    corner-shape: squircle;
+  }
 }
 
 /* Where to go next: quiet rows at the end of a project */
 .links {
   list-style: none;
   max-width: 38rem;
-  margin-top: 72px;
+  margin-top: var(--s-8);
   padding: 0;
-  border-top: 1px solid var(--rule);
+  border-top: var(--hair) solid var(--rule);
 }
 
 .links li {
-  border-bottom: 1px solid var(--rule);
+  border-bottom: var(--hair) solid var(--rule);
 }
 
 .link-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 0;
-  font-size: 15.5px;
+  gap: var(--s-3);
+  padding: var(--s-4) 0;
+  font-size: var(--t-small);
   font-weight: 500;
 }
 
 .link-row svg {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
 }
 
 .link-row__dot {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   box-shadow: inset 0 0 0 1.5px currentColor;
 }
 
 .link-row__meta {
   margin-left: auto;
-  font-size: 14px;
+  font-size: var(--t-meta);
   font-weight: 400;
   color: var(--quiet);
   transition: color 0.2s ease;
@@ -733,12 +889,21 @@ a:hover .icon::after {
   border-top: 0;
 }
 
+/* Tech specs sit between the story and the links */
+.specs {
+  margin-top: var(--s-8);
+}
+
+.specs + .links {
+  margin-top: var(--s-7);
+}
+
 /* ------------------------------------------------------------------
    Prose
    ------------------------------------------------------------------ */
 .prose {
   max-width: 38rem;
-  font-size: 17.5px;
+  font-size: var(--t-body);
   line-height: 1.7;
   letter-spacing: -0.006em;
   text-wrap: pretty;
@@ -750,7 +915,7 @@ a:hover .icon::after {
 
 .prose h2 {
   margin-top: 2.4em;
-  font-size: 22px;
+  font-size: var(--t-lede);
   line-height: 1.25;
   font-weight: 600;
   letter-spacing: -0.022em;
@@ -758,7 +923,7 @@ a:hover .icon::after {
 
 .prose h3 {
   margin-top: 2em;
-  font-size: 17.5px;
+  font-size: var(--t-body);
   font-weight: 600;
   letter-spacing: -0.012em;
 }
@@ -766,6 +931,32 @@ a:hover .icon::after {
 .prose h2 + *,
 .prose h3 + * {
   margin-top: 0.6em;
+}
+
+/* Heading anchors hang in the left margin, shown on hover */
+.prose :is(h2, h3) {
+  position: relative;
+  scroll-margin-top: 88px;
+}
+
+.prose .anchor {
+  position: absolute;
+  right: 100%;
+  padding-right: 0.4em;
+  color: var(--quiet);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.prose :is(h2, h3):hover .anchor,
+.prose .anchor:focus-visible {
+  opacity: 1;
+}
+
+.prose .anchor:hover {
+  color: var(--accent-text);
 }
 
 .prose a {
@@ -800,14 +991,14 @@ a:hover .icon::after {
 .prose blockquote {
   margin-left: 0;
   margin-right: 0;
-  padding-left: 20px;
+  padding-left: var(--s-5);
   border-left: 2px solid var(--accent);
   color: var(--soft);
 }
 
 .prose hr {
   border: 0;
-  height: 1px;
+  height: var(--hair);
   background: var(--rule);
   margin: 3em 0;
 }
@@ -816,7 +1007,21 @@ a:hover .icon::after {
   display: block;
   max-width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: 12px;
+}
+
+.prose figure {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+.prose figcaption {
+  margin-top: var(--s-3);
+  font-size: var(--t-meta);
+  line-height: 1.5;
+  color: var(--quiet);
+  text-align: center;
+  text-wrap: balance;
 }
 
 .prose code {
@@ -828,24 +1033,148 @@ a:hover .icon::after {
 }
 
 .prose pre {
+  position: relative;
   background: var(--well);
-  padding: 18px 20px;
+  padding: var(--s-4) var(--s-5);
   border-radius: 12px;
   overflow-x: auto;
   line-height: 1.6;
 }
 
+@supports (corner-shape: squircle) {
+  .prose pre,
+  .prose img {
+    border-radius: 20px;
+    corner-shape: squircle;
+  }
+}
+
 .prose pre code {
   background: none;
   padding: 0;
-  font-size: 13.5px;
+  font-size: var(--t-meta);
+}
+
+/* Two colours and a weight: strings glow, comments recede */
+.hljs-comment,
+.hljs-quote,
+.hljs-meta {
+  color: var(--quiet);
+}
+
+.hljs-string,
+.hljs-number,
+.hljs-literal,
+.hljs-regexp,
+.hljs-symbol {
+  color: var(--accent-text);
+}
+
+.hljs-keyword,
+.hljs-built_in,
+.hljs-title,
+.hljs-section {
+  font-weight: 600;
+}
+
+/* Copy, revealed on hover; always there on touch */
+.copy {
+  position: absolute;
+  top: var(--s-2);
+  right: var(--s-2);
+  padding: 2px var(--s-2);
+  border: 0;
+  border-radius: 6px;
+  background: var(--raised);
+  box-shadow: 0 0 0 0.5px var(--edge), 0 1px 2px var(--shade);
+  font-family: var(--sans);
+  font-size: var(--t-label);
+  font-weight: 500;
+  color: var(--quiet);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.prose pre:hover .copy,
+.copy:focus-visible,
+.copy.is-done {
+  opacity: 1;
+}
+
+.copy:hover,
+.copy.is-done {
+  color: var(--ink);
+}
+
+@media (hover: none) {
+  .copy {
+    opacity: 1;
+  }
+}
+
+/* Footnotes: side notes in the margin on wide screens, a list below otherwise */
+.fn-ref {
+  font-size: 0.7em;
+  line-height: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.fn-ref a {
+  padding: 0 0.15em;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.sidenote {
+  display: none;
+}
+
+.footnotes {
+  margin-top: var(--s-8);
+  padding-top: var(--s-4);
+  border-top: var(--hair) solid var(--rule);
+  font-size: var(--t-small);
+  color: var(--soft);
+}
+
+.footnotes ol {
+  padding-left: 1.25em;
+}
+
+.footnotes a {
+  text-decoration: none;
+  color: var(--quiet);
+}
+
+@media (min-width: 1120px) {
+  .sidenote {
+    display: block;
+    float: right;
+    clear: right;
+    width: 200px;
+    margin-right: -232px;
+    font-size: var(--t-meta);
+    line-height: 1.5;
+    color: var(--quiet);
+  }
+
+  .sidenote__n {
+    margin-right: var(--s-1);
+    color: var(--accent-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .footnotes {
+    display: none;
+  }
 }
 
 .filed {
-  margin-top: 72px;
-  padding-top: 18px;
-  border-top: 1px solid var(--rule);
-  font-size: 14px;
+  margin-top: var(--s-8);
+  padding-top: var(--s-4);
+  border-top: var(--hair) solid var(--rule);
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 
@@ -860,8 +1189,8 @@ a:hover .icon::after {
 
 .back {
   display: inline-block;
-  margin-top: 40px;
-  font-size: 15px;
+  margin-top: var(--s-6);
+  font-size: var(--t-small);
   color: var(--quiet);
   transition: color 0.2s ease;
 }
@@ -883,7 +1212,7 @@ a:hover .icon::after {
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  margin-bottom: 20px;
+  margin-bottom: var(--s-5);
   border-radius: 999px;
   background: var(--well);
 }
@@ -895,34 +1224,43 @@ a:hover .icon::after {
 .segmented button {
   position: relative;
   z-index: 1;
-  padding: 6px 16px;
+  padding: 6px var(--s-4);
   border: 0;
   border-radius: 999px;
   background: transparent;
-  font-size: 14px;
+  font-size: var(--t-meta);
   font-weight: 500;
   color: var(--quiet);
   cursor: pointer;
   transition: color 0.2s ease, background-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.segmented button:hover {
-  color: var(--ink);
-}
-
-.segmented button[aria-selected="true"] {
+.segmented button:hover,
+.segmented button[aria-selected="true"],
+.segmented button[aria-checked="true"] {
   color: var(--ink);
 }
 
 .segmented__count {
-  margin-left: 4px;
+  margin-left: var(--s-1);
   font-weight: 400;
   color: var(--quiet);
   font-variant-numeric: tabular-nums;
 }
 
+/* The appearance switch in the footer */
+.segmented--sm {
+  margin: 0;
+}
+
+.segmented--sm button {
+  padding: 2px 10px;
+  font-size: var(--t-label);
+  letter-spacing: 0.01em;
+}
+
 .shelf-panel + .shelf-panel {
-  margin-top: 72px;
+  margin-top: var(--s-8);
 }
 
 .has-tabs .shelf-panel .label {
@@ -937,16 +1275,16 @@ a:hover .icon::after {
 .shelf-list {
   list-style: none;
   padding: 0;
-  border-top: 1px solid var(--rule);
+  border-top: var(--hair) solid var(--rule);
 }
 
 .shelf-row {
   display: grid;
-  grid-template-columns: 33px 1fr auto;
-  gap: 16px;
+  grid-template-columns: 32px 1fr auto;
+  gap: var(--s-4);
   align-items: start;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--rule);
+  padding: var(--s-3) 0;
+  border-bottom: var(--hair) solid var(--rule);
 }
 
 .shelf-row--uses {
@@ -956,8 +1294,8 @@ a:hover .icon::after {
 
 /* Group headings inside a Uses tab */
 .group-label {
-  margin: 40px 0 10px;
-  font-size: 11px;
+  margin: var(--s-6) 0 var(--s-2);
+  font-size: var(--t-label);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -965,34 +1303,62 @@ a:hover .icon::after {
 }
 
 .shelf-panel > .group-label:first-of-type {
-  margin-top: 12px;
-}
-
-.shelf-row--uses {
-  padding: 10px 0;
+  margin-top: var(--s-3);
 }
 
 .shelf-row:hover .icon {
   transform: translateY(-2px) rotate(-6deg) scale(1.08);
 }
 
-.shelf-row__cover {
+/* A cover is a small object: hover lifts it off the shelf */
+.cover {
+  position: relative;
+  z-index: 1;
   display: block;
-  width: 33px;
-  height: 50px;
-  object-fit: cover;
+  width: 32px;
+  height: 48px;
   border-radius: 2px;
   background: var(--well);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 2px 5px -2px rgb(0 0 0 / 0.3);
-  transition: transform 0.5s var(--spring);
+  box-shadow: 0 0 0 var(--hair) var(--edge), 0 2px 5px -2px var(--shade);
+  transform-origin: 0 50%;
+  transition:
+    transform 0.55s var(--spring),
+    box-shadow 0.45s var(--ease);
 }
 
-.shelf-row__cover--book {
+.cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* A book has a spine: a crease of shadow and light down the left edge */
+.cover--book {
   border-radius: 1px 3px 3px 1px;
 }
 
-.shelf-row:hover .shelf-row__cover {
-  transform: translateY(-2px) rotate(-3deg);
+.cover--book::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+      rgb(0 0 0 / 0.28) 0,
+      rgb(255 255 255 / 0.18) 2px,
+      rgb(0 0 0 / 0.06) 4px,
+      transparent 7px);
+  pointer-events: none;
+}
+
+.shelf-row:hover .cover {
+  z-index: 5;
+  transform: scale(1.75) rotate(-2deg);
+  box-shadow:
+    0 0 0 var(--hair) var(--edge),
+    0 6px 10px -4px var(--shade),
+    0 18px 28px -10px var(--shade);
 }
 
 .shelf-row__body {
@@ -1000,7 +1366,7 @@ a:hover .icon::after {
 }
 
 .shelf-row__title {
-  font-size: 15.5px;
+  font-size: var(--t-small);
   font-weight: 500;
   line-height: 1.35;
   letter-spacing: -0.012em;
@@ -1008,27 +1374,27 @@ a:hover .icon::after {
 
 .shelf-row__by {
   margin-top: 1px;
-  font-size: 13.5px;
+  font-size: var(--t-meta);
   color: var(--quiet);
   font-variant-numeric: tabular-nums;
 }
 
 .shelf-row__note {
-  margin-top: 5px;
-  font-size: 14px;
+  margin-top: var(--s-1);
+  font-size: var(--t-small);
   line-height: 1.5;
   color: var(--soft);
   text-wrap: pretty;
 }
 
 .shelf-row .rating {
-  margin-top: 7px;
+  margin-top: var(--s-2);
 }
 
 .rating {
   display: flex;
-  gap: 4px;
-  margin-top: 9px;
+  gap: var(--s-1);
+  margin-top: var(--s-2);
 }
 
 .rating__dot {
@@ -1047,13 +1413,31 @@ a:hover .icon::after {
 }
 
 /* ------------------------------------------------------------------
+   404
+   ------------------------------------------------------------------ */
+.lost .title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.lost .status-dot {
+  width: 10px;
+  height: 10px;
+}
+
+.lost .more {
+  margin-right: var(--s-5);
+}
+
+/* ------------------------------------------------------------------
    Pagination
    ------------------------------------------------------------------ */
 .pagination {
   display: flex;
   justify-content: space-between;
-  margin-top: 40px;
-  font-size: 15px;
+  margin-top: var(--s-6);
+  font-size: var(--t-small);
   color: var(--quiet);
 }
 
@@ -1067,35 +1451,80 @@ a:hover .icon::after {
 .colophon {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
-  margin-top: 144px;
-  padding: 22px 0 56px;
-  border-top: 1px solid var(--rule);
-  font-size: 13px;
+  align-items: center;
+  gap: var(--s-5);
+  margin-top: var(--s-10);
+  padding: var(--s-5) 0 var(--s-7);
+  border-top: var(--hair) solid var(--rule);
+  font-size: var(--t-meta);
   color: var(--quiet);
 }
 
 .colophon__links {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: var(--s-5);
 }
 
-.colophon a,
-.colophon__theme {
+.colophon a {
   transition: color 0.2s ease;
 }
 
-.colophon a:hover,
-.colophon__theme:hover {
+.colophon a:hover {
   color: var(--ink);
 }
 
-.colophon__theme {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  cursor: pointer;
+/* ------------------------------------------------------------------
+   Motion: rows rise into place, pages hand over to each other
+   ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .list > li,
+    .shelf-row,
+    .links > li,
+    .spec > div {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 50%;
+    }
+  }
+
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: 0.45s;
+    animation-timing-function: var(--ease);
+  }
+
+  ::view-transition-old(root) {
+    animation: 0.18s ease both fade-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: 0.42s var(--ease) both page-in;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
 
 /* ------------------------------------------------------------------
@@ -1103,17 +1532,21 @@ a:hover .icon::after {
    ------------------------------------------------------------------ */
 @media (max-width: 560px) {
   main {
-    padding-top: 40px;
+    padding-top: var(--s-6);
   }
 
   .is-home main {
-    padding: 18px 0 20px;
+    padding: var(--s-4) 0 var(--s-5);
   }
 
   .home__grid {
     grid-template-columns: 1fr;
-    gap: 22px;
-    margin-top: 26px;
+    gap: var(--s-5);
+    margin-top: var(--s-5);
+  }
+
+  .now {
+    margin-top: var(--s-4);
   }
 
   .mini__item {
@@ -1130,11 +1563,11 @@ a:hover .icon::after {
   }
 
   .is-home .colophon {
-    padding-bottom: 24px;
+    padding-bottom: var(--s-5);
   }
 
   .block {
-    margin-top: 80px;
+    margin-top: var(--s-8);
   }
 
   .spec div {
@@ -1159,12 +1592,13 @@ a:hover .icon::after {
 
   .colophon {
     flex-direction: column;
-    gap: 12px;
+    align-items: flex-start;
+    gap: var(--s-3);
   }
 
   .masthead {
     gap: 10px;
-    padding: 12px 0;
+    padding: var(--s-3) 0;
     margin-top: 0;
   }
 
@@ -1173,32 +1607,35 @@ a:hover .icon::after {
   }
 
   .nav a {
-    padding: 5px 8px;
-    font-size: 13px;
-  }
-
-  .brand {
-    font-size: 17px;
+    padding: 5px var(--s-2);
   }
 
   .shelf-row {
-    gap: 14px;
+    gap: var(--s-3);
+  }
+
+  .shelf-row:hover .cover {
+    transform: scale(1.4) rotate(-2deg);
   }
 
   .icon-head {
-    gap: 16px;
-    margin-bottom: 48px;
+    gap: var(--s-4);
+    margin-bottom: var(--s-7);
   }
 
   .icon-head .lede {
-    font-size: 15.5px;
+    font-size: var(--t-small);
+  }
+
+  .shot {
+    margin-bottom: var(--s-7);
   }
 }
 
 /* Very small phones: keep the wordmark and nav on one line */
 @media (max-width: 374px) {
   .wrap {
-    padding: 0 16px;
+    padding: 0 var(--s-4);
   }
 
   .masthead {
@@ -1207,11 +1644,11 @@ a:hover .icon::after {
 
   .nav a {
     padding: 5px 6px;
-    font-size: 12.5px;
+    font-size: var(--t-label);
   }
 
   .brand {
-    font-size: 16px;
+    font-size: var(--t-small);
   }
 }
 

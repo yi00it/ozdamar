@@ -6,6 +6,11 @@ website: "https://teknoloji.org"
 tags: ["publication", "tech"]
 order: 2
 icon: "/icons/teknoloji.svg"
+image: "/shots/teknoloji.jpg"
+specs:
+  Type: "Publication"
+  Language: "Turkish"
+  Peak readership: "Around a million visitors a month"
 ---
 
 Teknoloji.org is a Turkish-language technology publication I run. At its peak it reached around a million visitors a month.

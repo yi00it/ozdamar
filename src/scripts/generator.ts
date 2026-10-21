@@ -5,6 +5,20 @@ import { BlogPost, Project, ShelfItem, Uses, UsesGroup, UsesItem, normalizeTagSl
 
 const GITHUB_MARK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
 
+// A share card to render at build time: written to /og/<slug>.png
+export interface OgCard {
+  slug: string;
+  title: string;
+  kicker: string;
+  icon?: string;
+}
+
+interface PageOptions {
+  bodyClass?: string;
+  og?: OgCard;
+  headExtra?: string;
+}
+
 export interface SiteConfig {
   siteName: string;
   siteUrl: string;
@@ -15,6 +29,8 @@ export interface SiteConfig {
 }
 
 export class SiteGenerator {
+  readonly ogCards: OgCard[] = [];
+
   constructor(
     private templates: TemplateEngine,
     private config: SiteConfig,
@@ -68,23 +84,30 @@ export class SiteGenerator {
     </li>`;
   }
 
+  // The breathing orange light, for whatever is being worked on now
+  private statusDot(project: Project): string {
+    return project.active ? '<span class="status-dot" role="img" aria-label="Active"></span>' : '';
+  }
+
   private projectRow(project: Project, index: number): string {
     return `
     <li>
       <a href="${this.url(`/projects/${project.slug}/`)}" class="row row--icon">
         ${this.projectIcon(project)}
-        <span class="row__title">${project.title}</span>
+        <span class="row__title">${project.title}${this.statusDot(project)}</span>
         <span class="row__desc">${project.description}</span>
       </a>
     </li>`;
   }
 
-  // Small app-style tile: the project's own icon, or its initial
+  // Small app-style tile: the project's own icon, or its initial. The shared
+  // transition name lets the tile grow into the project page's large icon.
   private projectIcon(project: Project, size: 'sm' | 'lg' = 'sm'): string {
+    const morph = ` style="view-transition-name: icon-${project.slug}"`;
     if (project.icon) {
-      return `<span class="icon icon--${size}" aria-hidden="true"><img src="${this.url(project.icon)}" alt="" width="64" height="64"></span>`;
+      return `<span class="icon icon--${size}"${morph} aria-hidden="true"><img src="${this.url(project.icon)}" alt="" width="64" height="64"></span>`;
     }
-    return `<span class="icon icon--${size} icon--letter" aria-hidden="true">${project.title.charAt(0)}</span>`;
+    return `<span class="icon icon--${size} icon--letter"${morph} aria-hidden="true">${project.title.charAt(0)}</span>`;
   }
 
   private miniPost(post: BlogPost): string {
@@ -103,7 +126,7 @@ export class SiteGenerator {
         <li>
           <a href="${this.url(`/projects/${project.slug}/`)}" class="mini__item mini__item--icon">
             ${this.projectIcon(project)}
-            <span class="mini__title">${project.title}</span>
+            <span class="mini__title">${project.title}${this.statusDot(project)}</span>
             <span class="mini__meta">${project.description}</span>
           </a>
         </li>`;
@@ -151,10 +174,14 @@ export class SiteGenerator {
     }).join('\n        ');
   }
 
-  private page(content: string, title: string, description: string, pagePath: string, bodyClass = ''): string {
+  private page(content: string, title: string, description: string, pagePath: string, options: PageOptions = {}): string {
+    const og = options.og ?? { slug: 'site', title: this.config.intro, kicker: this.config.siteName };
+    if (!this.ogCards.some(card => card.slug === og.slug)) this.ogCards.push(og);
     return this.templates.renderLayout(content, {
       nav_links: this.navLinks(pagePath),
-      body_class: bodyClass,
+      body_class: options.bodyClass ?? '',
+      head_extra: options.headExtra ?? '',
+      og_image: `${this.config.siteUrl}/og/${og.slug}.png`,
       page_title: title,
       page_description: description,
       page_url: `${this.config.siteUrl}${pagePath}`,
@@ -165,15 +192,23 @@ export class SiteGenerator {
   }
 
   generateHome(posts: BlogPost[], projects: Project[]): void {
+    // Now: the projects that carry the light
+    const active = this.sortProjects(projects).filter(project => project.active);
+    const now = active.length === 0 ? '' : `
+  <p class="now"><span class="status-dot" aria-hidden="true"></span><span class="now__label">Now</span>${active
+    .map(project => `<a href="${this.url(`/projects/${project.slug}/`)}">Building ${project.title} <span aria-hidden="true">→</span></a>`)
+    .join('')}</p>`;
+
     const homeContent = this.templates.render('home', {
       intro: this.config.intro,
       intro_sub: this.config.introSub,
+      now,
       base_path: this.config.basePath,
       posts_list: this.sortPosts(posts).slice(0, 3).map(post => this.miniPost(post)).join(''),
       projects_list: this.sortProjects(projects).slice(0, 3).map(project => this.miniProject(project)).join('')
     });
 
-    const html = this.page(homeContent, this.config.siteName, this.config.siteDescription, '/', 'is-home');
+    const html = this.page(homeContent, this.config.siteName, this.config.siteDescription, '/', { bodyClass: 'is-home' });
     this.writeFile(path.join(this.distDir, 'index.html'), html);
   }
 
@@ -192,7 +227,10 @@ export class SiteGenerator {
     });
 
     const pagePath = this.postPath(post);
-    const html = this.page(postContent, `${post.title} — ${this.config.siteName}`, post.description || post.title, pagePath);
+    const html = this.page(postContent, `${post.title} — ${this.config.siteName}`, post.description || post.title, pagePath, {
+      bodyClass: 'is-post',
+      og: { slug: `post-${post.slug}`, title: post.title, kicker: `Writing · ${this.formatDate(post.date, { year: 'numeric', month: 'long' })}` }
+    });
     this.writeFile(path.join(this.distDir, pagePath, 'index.html'), html);
   }
 
@@ -223,7 +261,9 @@ export class SiteGenerator {
 
       const pagePath = page === 1 ? '/blog/' : `/blog/page/${page}/`;
       const title = page === 1 ? `Writing — ${this.config.siteName}` : `Writing, page ${page} — ${this.config.siteName}`;
-      const html = this.page(indexContent, title, `Writing by ${this.config.siteName}`, pagePath);
+      const html = this.page(indexContent, title, `Writing by ${this.config.siteName}`, pagePath, {
+        og: { slug: 'writing', title: 'Writing', kicker: this.config.siteName }
+      });
       this.writeFile(path.join(this.distDir, pagePath, 'index.html'), html);
     }
   }
@@ -244,10 +284,25 @@ export class SiteGenerator {
       project.demo ? linkRow(project.demo, ring, 'Live demo', 'Open') : ''
     ].join('');
 
+    const shot = project.image ? `
+  <figure class="shot">
+    <img src="${this.url(project.image)}" alt="${project.title}" width="2560" height="1600" loading="lazy" decoding="async">
+  </figure>` : '';
+
+    const specs = project.specs.length === 0 ? '' : `
+  <section class="specs" aria-labelledby="specs">
+    <h2 class="label" id="specs">Tech specs</h2>
+    <dl class="spec">${project.specs.map(([key, value]) => `
+      <div><dt>${key}</dt><dd>${value}</dd></div>`).join('')}
+    </dl>
+  </section>`;
+
     const projectContent = this.templates.render('project', {
       icon: this.projectIcon(project, 'lg'),
       title: project.title,
       description: project.description,
+      shot,
+      specs,
       links,
       tags_html: this.filedUnder(project.tags),
       content: project.content,
@@ -255,7 +310,9 @@ export class SiteGenerator {
     });
 
     const pagePath = `/projects/${project.slug}/`;
-    const html = this.page(projectContent, `${project.title} — ${this.config.siteName}`, project.description, pagePath);
+    const html = this.page(projectContent, `${project.title} — ${this.config.siteName}`, project.description, pagePath, {
+      og: { slug: `project-${project.slug}`, title: project.title, kicker: project.description, icon: project.icon }
+    });
     this.writeFile(path.join(this.distDir, pagePath, 'index.html'), html);
   }
 
@@ -264,7 +321,9 @@ export class SiteGenerator {
       projects_list: this.projectRows(projects)
     });
 
-    const html = this.page(indexContent, `Projects — ${this.config.siteName}`, `Projects by ${this.config.siteName}`, '/projects/');
+    const html = this.page(indexContent, `Projects — ${this.config.siteName}`, `Projects by ${this.config.siteName}`, '/projects/', {
+      og: { slug: 'projects', title: 'Projects', kicker: 'Things I’m building.' }
+    });
     this.writeFile(path.join(this.distDir, 'projects', 'index.html'), html);
   }
 
@@ -350,7 +409,7 @@ export class SiteGenerator {
     const by = [item.creator, item.year].filter(Boolean).join(' · ');
     return `
     <li class="shelf-row">
-      <img class="shelf-row__cover shelf-row__cover--${kind}" src="${this.url(item.cover)}" alt="" loading="lazy" width="66" height="100">
+      <span class="cover cover--${kind}"><img src="${this.url(item.cover)}" alt="" loading="lazy" width="66" height="100"></span>
       <div class="shelf-row__body">
         <h3 class="shelf-row__title" title="${fullTitle}">${item.title}</h3>
         <p class="shelf-row__by">${by}</p>
@@ -389,7 +448,9 @@ ${panels}`;
       ])
     });
 
-    const html = this.page(content, `Shelf — ${this.config.siteName}`, `Books and movies, with ratings and a few words on each.`, '/shelf/');
+    const html = this.page(content, `Shelf — ${this.config.siteName}`, `Books and movies, with ratings and a few words on each.`, '/shelf/', {
+      og: { slug: 'shelf', title: 'Shelf', kicker: 'Books and films, with a few words on each.' }
+    });
     this.writeFile(path.join(this.distDir, 'shelf', 'index.html'), html);
   }
 
@@ -425,8 +486,19 @@ ${panels}`;
       ])
     });
 
-    const html = this.page(content, `Uses — ${this.config.siteName}`, uses.description, '/uses/');
+    const html = this.page(content, `Uses — ${this.config.siteName}`, uses.description, '/uses/', {
+      og: { slug: 'uses', title: 'Uses', kicker: uses.description }
+    });
     this.writeFile(path.join(this.distDir, 'uses', 'index.html'), html);
+  }
+
+  // GitHub Pages serves this for any missing path
+  generateNotFound(): void {
+    const content = this.templates.render('404', { base_path: this.config.basePath });
+    const html = this.page(content, `Not found — ${this.config.siteName}`, 'This page doesn’t exist.', '/404.html', {
+      headExtra: '\n  <meta name="robots" content="noindex">'
+    });
+    this.writeFile(path.join(this.distDir, '404.html'), html);
   }
 
   generateRSS(posts: BlogPost[]): void {

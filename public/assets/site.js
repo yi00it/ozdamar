@@ -1,34 +1,8 @@
-// Light by default; the footer toggle switches to dark and remembers it.
-(function () {
-  var root = document.documentElement;
-  var toggles = document.querySelectorAll('[data-theme-toggle]');
+// Loaded at the end of <body>, before #ready, so everything here is settled
+// before the first frame and page transitions see the final layout.
 
-  function isDark() {
-    return root.getAttribute('data-theme') === 'dark';
-  }
-
-  function sync() {
-    var dark = isDark();
-    Array.prototype.forEach.call(toggles, function (el) {
-      el.setAttribute('aria-pressed', String(dark));
-      el.textContent = dark ? 'Light mode' : 'Dark mode';
-    });
-  }
-
-  Array.prototype.forEach.call(toggles, function (el) {
-    el.addEventListener('click', function () {
-      var next = isDark() ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      try { localStorage.setItem('theme', next); } catch (e) {}
-      sync();
-    });
-  });
-
-  sync();
-})();
-
-// One pill per capsule (header nav, Shelf and Uses switches): it slides to the
-// hovered or focused item and back to the current one.
+// One pill per capsule (header nav, Shelf and Uses switches, appearance): it
+// slides to the hovered or focused item and back to the current one.
 var slidingPill = (function () {
   document.documentElement.classList.add('has-pill');
 
@@ -73,6 +47,74 @@ var slidingPill = (function () {
   };
 })();
 
+// Arrow keys move between the items of a single-choice capsule
+function arrowKeys(buttons, choose) {
+  buttons.forEach(function (b, i) {
+    b.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      choose(buttons[(i + (e.key === 'ArrowRight' ? 1 : buttons.length - 1)) % buttons.length], true);
+    });
+  });
+}
+
+// Appearance: Auto follows the system, Light and Dark are remembered.
+(function () {
+  var root = document.documentElement;
+  var group = document.querySelector('[data-theme-switch]');
+  if (!group) return;
+
+  var buttons = Array.prototype.slice.call(group.querySelectorAll('[data-value]'));
+  var metas = document.querySelectorAll('meta[name="theme-color"]');
+  var defaults = Array.prototype.map.call(metas, function (m) { return m.content; });
+
+  function current() {
+    return root.getAttribute('data-theme') || 'auto';
+  }
+
+  function apply(value) {
+    if (value === 'auto') {
+      root.removeAttribute('data-theme');
+      try { localStorage.removeItem('theme'); } catch (e) {}
+    } else {
+      root.setAttribute('data-theme', value);
+      try { localStorage.setItem('theme', value); } catch (e) {}
+    }
+    // The browser bar follows the page, not the system, once a theme is chosen
+    Array.prototype.forEach.call(metas, function (m, i) {
+      m.content = value === 'auto' ? defaults[i] : value === 'dark' ? '#121211' : '#f3f2ee';
+    });
+  }
+
+  function choose(button, focus) {
+    var value = button.getAttribute('data-value');
+    buttons.forEach(function (b) {
+      var on = b === button;
+      b.setAttribute('aria-checked', String(on));
+      b.tabIndex = on ? 0 : -1;
+    });
+    if (focus) button.focus();
+    if (value !== current()) apply(value);
+    settle();
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { choose(b); });
+  });
+  arrowKeys(buttons, choose);
+
+  group.hidden = false;
+  var start = current();
+  buttons.forEach(function (b) {
+    var on = b.getAttribute('data-value') === start;
+    b.setAttribute('aria-checked', String(on));
+    b.tabIndex = on ? 0 : -1;
+  });
+  var settle = slidingPill(group, buttons, function () {
+    return group.querySelector('[aria-checked="true"]');
+  });
+})();
+
 // Shelf and Uses: show one list at a time; the hash (#books, #software…) keeps it linkable.
 (function () {
   var tabs = document.querySelector('[data-tabs]');
@@ -96,18 +138,16 @@ var slidingPill = (function () {
     settle();
   }
 
-  buttons.forEach(function (b, i) {
+  buttons.forEach(function (b) {
     b.addEventListener('click', function () {
       var name = b.getAttribute('data-tab');
       show(name);
       history.replaceState(null, '', '#' + name);
     });
-    b.addEventListener('keydown', function (e) {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      var next = buttons[(i + (e.key === 'ArrowRight' ? 1 : buttons.length - 1)) % buttons.length];
-      show(next.getAttribute('data-tab'), true);
-      history.replaceState(null, '', '#' + next.getAttribute('data-tab'));
-    });
+  });
+  arrowKeys(buttons, function (next, focus) {
+    show(next.getAttribute('data-tab'), focus);
+    history.replaceState(null, '', '#' + next.getAttribute('data-tab'));
   });
 
   var initial = location.hash.slice(1);
@@ -116,6 +156,31 @@ var slidingPill = (function () {
   show(names.indexOf(initial) >= 0 ? initial : names[0]);
   settle = slidingPill(tabs, buttons, function () {
     return tabs.querySelector('[aria-selected="true"]');
+  });
+})();
+
+// Code blocks: a quiet Copy button
+(function () {
+  if (!navigator.clipboard) return;
+  Array.prototype.forEach.call(document.querySelectorAll('.prose pre'), function (pre) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy';
+    button.textContent = 'Copy';
+    var timer;
+    button.addEventListener('click', function () {
+      var code = pre.querySelector('code') || pre;
+      navigator.clipboard.writeText(code.innerText.replace(/\n$/, '')).then(function () {
+        button.textContent = 'Copied';
+        button.classList.add('is-done');
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          button.textContent = 'Copy';
+          button.classList.remove('is-done');
+        }, 1600);
+      });
+    });
+    pre.appendChild(button);
   });
 })();
 
