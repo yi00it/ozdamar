@@ -2,7 +2,6 @@
 title: "Saharos"
 slug: "saharos"
 description: "Software for running construction projects. In development."
-github: "https://github.com/yi00it/saharos"
 tags: ["in-development", "construction"]
 order: 5
 icon: "/icons/saharos.png"

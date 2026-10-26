@@ -151,7 +151,7 @@ export class ContentParser {
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const { data, content } = matter(fileContent);
 
-    if (!data.title || !data.slug || !data.description || !(data.github || data.website)) {
+    if (!data.title || !data.slug || !data.description) {
       throw new Error(`Missing required frontmatter in ${filePath}`);
     }
 

@@ -5,3 +5,6 @@ dist/
 .env
 CLAUDE.md
 .mise.toml
+
+# Local writing desk (npx ts-node admin/server.ts)
+admin/

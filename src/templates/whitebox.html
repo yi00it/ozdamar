@@ -1,0 +1,96 @@
+<article class="product">
+  <header class="icon-head">
+    {{icon}}
+    <div>
+      <h1 class="title">Whitebox</h1>
+      <p class="lede">A free, open-source cleaner and performance toolkit for Windows.</p>
+    </div>
+  </header>
+
+  <p class="product__pitch">Clean junk, find what’s eating your disk, tame startup apps and keep an eye on your PC, in one fast, native app. No ads, no accounts, no telemetry.</p>
+
+  <div class="download" data-release="{{repo}}">
+    <a href="{{download_url}}" class="download__button" data-release-link>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M8 2v8.5M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>
+      <span>Download for Windows</span>
+    </a>
+    <p class="meta download__meta"><span data-release-version="Version ">{{version}}</span><span data-release-size{{size_hidden}}>{{size}}</span><span>Windows 10 &amp; 11, x64</span></p>
+  </div>
+
+  <figure class="shot">
+    <img src="{{base_path}}/shots/whitebox/home.png" alt="Whitebox’s Smart Care home screen" width="1980" height="1290" decoding="async">
+  </figure>
+
+  <section class="block" aria-labelledby="features">
+    <h2 class="label" id="features">What it does</h2>
+    <dl class="features">
+      <div><dt>Smart Care</dt><dd>One click to scan, then clean junk and free up memory. Live CPU, memory, disk and system tiles.</dd></div>
+      <div><dt>System Junk</dt><dd>About 30 locations: temp files, update caches, crash dumps, browser, app and developer caches.</dd></div>
+      <div><dt>Large Files</dt><dd>Scans a whole drive in parallel. Filter by videos, disk images, installers, archives.</dd></div>
+      <div><dt>Duplicates</dt><dd>Byte-for-byte identical files, verified with SHA-256. Auto-select keeps the oldest copy.</dd></div>
+      <div><dt>Space Lens</dt><dd>An interactive map of your drive, every folder sized by the space it takes.</dd></div>
+      <div><dt>Performance</dt><dd>Live CPU, memory and network charts, a process list, end task, free up memory.</dd></div>
+      <div><dt>Startup Apps</dt><dd>Turn apps that launch at sign-in on or off, with the same switch Task Manager uses.</dd></div>
+      <div><dt>Uninstaller</dt><dd>Every installed app with icon, size and date. Removes leftover folders afterwards.</dd></div>
+      <div><dt>Toolkit</dt><dd>Flush DNS, restart Explorer, refresh the icon cache, create a restore point, SFC, DISM, power plans.</dd></div>
+      <div><dt>Light and dark</dt><dd>Follows your Windows theme, or flip it from the title bar. Updates itself in one click.</dd></div>
+    </dl>
+  </section>
+
+  <section class="block" aria-labelledby="screens">
+    <h2 class="label" id="screens">Screens</h2>
+    <div class="gallery">
+      <a href="{{base_path}}/shots/whitebox/cleanup.png"><img src="{{base_path}}/shots/whitebox/cleanup.png" alt="System Junk" width="1980" height="1290" loading="lazy" decoding="async"></a>
+      <a href="{{base_path}}/shots/whitebox/space.png"><img src="{{base_path}}/shots/whitebox/space.png" alt="Space Lens" width="1980" height="1290" loading="lazy" decoding="async"></a>
+      <a href="{{base_path}}/shots/whitebox/performance.png"><img src="{{base_path}}/shots/whitebox/performance.png" alt="Performance, in dark mode" width="1980" height="1290" loading="lazy" decoding="async"></a>
+      <a href="{{base_path}}/shots/whitebox/tools.png"><img src="{{base_path}}/shots/whitebox/tools.png" alt="Toolkit, in dark mode" width="1980" height="1290" loading="lazy" decoding="async"></a>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="safe">
+    <h2 class="label" id="safe">Is it safe?</h2>
+    <div class="prose">
+      <p>Whitebox is built to be conservative.</p>
+      <ul>
+        <li>Browser history, cookies and saved passwords are never touched, only caches that browsers rebuild themselves.</li>
+        <li>Temp files changed in the last two hours are left alone, so running installers don’t break.</li>
+        <li>Files in use are skipped, and an app’s cache is skipped entirely while that app is running.</li>
+        <li>Large files, duplicates and Space Lens items go to the Recycle Bin, so you can restore them.</li>
+        <li>Every action that removes something asks you first.</li>
+        <li>Everything runs locally. The only network call is the daily update check, which sends nothing about you or your PC.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="install">
+    <h2 class="label" id="install">Install</h2>
+    <div class="prose">
+      <ol>
+        <li>Download the installer above.</li>
+        <li>Run it. Whitebox installs for your account, no admin rights needed, and shows up in the Start menu and in Settings → Apps.</li>
+        <li>That’s it. It checks for a new version once a day and asks before updating.</li>
+      </ol>
+      <blockquote>
+        <p><strong>“Windows protected your PC”?</strong> Whitebox isn’t code-signed yet, so SmartScreen warns about new downloads. Click <em>More info → Run anyway</em>. Every release publishes <a href="{{sums_url}}" data-release-sums>SHA-256 checksums</a> you can check the file against.</p>
+      </blockquote>
+    </div>
+  </section>
+{{specs}}
+
+  <ul class="links">
+    <li>
+      <a href="https://github.com/{{repo}}" class="link-row">
+        {{github_mark}}
+        <span>Source code</span>
+        <span class="link-row__meta">GitHub <span aria-hidden="true">↗</span></span>
+      </a>
+    </li>
+    <li>
+      <a href="https://github.com/{{repo}}/releases" class="link-row">
+        <span class="link-row__dot" aria-hidden="true"></span>
+        <span>Release notes</span>
+        <span class="link-row__meta">All versions <span aria-hidden="true">↗</span></span>
+      </a>
+    </li>
+  </ul>
+</article>

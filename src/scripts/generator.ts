@@ -5,12 +5,26 @@ import { BlogPost, Project, ShelfItem, Uses, UsesGroup, UsesItem, normalizeTagSl
 
 const GITHUB_MARK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
 
+// Installer sizes, as Windows shows them
+export function formatSize(bytes: number): string {
+  return `${Math.round(bytes / 1048576)} MB`;
+}
+
 // A share card to render at build time: written to /og/<slug>.png
 export interface OgCard {
   slug: string;
   title: string;
   kicker: string;
   icon?: string;
+}
+
+// The newest GitHub release of a downloadable project, fetched at build time
+export interface Release {
+  version: string;
+  published: string;
+  downloadUrl: string;
+  size: number;
+  sumsUrl?: string;
 }
 
 interface PageOptions {
@@ -163,7 +177,7 @@ export class SiteGenerator {
   private navLinks(pagePath: string): string {
     const sections = [
       { href: '/blog/', label: 'Writing', match: ['/blog/', '/tag/'] },
-      { href: '/projects/', label: 'Projects', match: ['/projects/'] },
+      { href: '/projects/', label: 'Projects', match: ['/projects/', '/whitebox/'] },
       { href: '/shelf/', label: 'Shelf', match: ['/shelf/'] },
       { href: '/uses/', label: 'Uses', match: ['/uses/'] }
     ];
@@ -269,41 +283,42 @@ export class SiteGenerator {
   }
 
   generateProject(project: Project): void {
-    const linkRow = (href: string, leading: string, label: string, meta: string) => `
+    const linkRow = (href: string, leading: string, label: string, meta: string, arrow = '↗') => `
     <li>
       <a href="${href}" class="link-row">
         ${leading}
         <span>${label}</span>
-        <span class="link-row__meta">${meta} <span aria-hidden="true">↗</span></span>
+        <span class="link-row__meta">${meta} <span aria-hidden="true">${arrow}</span></span>
       </a>
     </li>`;
     const ring = '<span class="link-row__dot" aria-hidden="true"></span>';
+    // A website on this site is the project's own download page
+    const website = !project.website ? ''
+      : project.website.startsWith('/')
+        ? linkRow(this.url(project.website), ring, 'Download', `${this.config.siteUrl.replace(/^https?:\/\//, '')}${project.website.replace(/\/$/, '')}`, '→')
+        : linkRow(project.website, ring, 'Website', project.website.replace(/^https?:\/\//, '').replace(/\/$/, ''));
     const links = [
-      project.website ? linkRow(project.website, ring, 'Website', project.website.replace(/^https?:\/\//, '').replace(/\/$/, '')) : '',
+      website,
       project.github ? linkRow(project.github, GITHUB_MARK, 'Source code', 'GitHub') : '',
       project.demo ? linkRow(project.demo, ring, 'Live demo', 'Open') : ''
     ].join('');
+    const linkList = links ? `
+  <ul class="links">${links}
+  </ul>
+` : '';
 
     const shot = project.image ? `
   <figure class="shot">
     <img src="${this.url(project.image)}" alt="${project.title}" width="2560" height="1600" loading="lazy" decoding="async">
   </figure>` : '';
 
-    const specs = project.specs.length === 0 ? '' : `
-  <section class="specs" aria-labelledby="specs">
-    <h2 class="label" id="specs">Tech specs</h2>
-    <dl class="spec">${project.specs.map(([key, value]) => `
-      <div><dt>${key}</dt><dd>${value}</dd></div>`).join('')}
-    </dl>
-  </section>`;
-
     const projectContent = this.templates.render('project', {
       icon: this.projectIcon(project, 'lg'),
       title: project.title,
       description: project.description,
       shot,
-      specs,
-      links,
+      specs: this.specSheet(project.specs),
+      links: linkList,
       tags_html: this.filedUnder(project.tags),
       content: project.content,
       base_path: this.config.basePath
@@ -314,6 +329,50 @@ export class SiteGenerator {
       og: { slug: `project-${project.slug}`, title: project.title, kicker: project.description, icon: project.icon }
     });
     this.writeFile(path.join(this.distDir, pagePath, 'index.html'), html);
+  }
+
+  private specSheet(specs: [string, string][]): string {
+    return specs.length === 0 ? '' : `
+  <section class="specs" aria-labelledby="specs">
+    <h2 class="label" id="specs">Tech specs</h2>
+    <dl class="spec">${specs.map(([key, value]) => `
+      <div><dt>${key}</dt><dd>${value}</dd></div>`).join('')}
+    </dl>
+  </section>`;
+  }
+
+  // Whitebox's download page at /whitebox/. Without a release (offline build)
+  // the button falls back to GitHub's latest-release page; site.js refreshes
+  // it from the GitHub API either way, so it stays current between deploys.
+  generateWhitebox(project: Project, repo: string, release: Release | null): void {
+    const version = release ? `Version ${release.version.replace(/^v/, '')}` : 'Latest release';
+    const size = release ? formatSize(release.size) : '';
+    const published = release ? this.formatDate(release.published, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    const specs = this.specSheet([
+      ...(release ? [
+        ['Version', `<span data-release-version>${release.version.replace(/^v/, '')}</span>`],
+        ['Updated', `<span data-release-date>${published}</span>`]
+      ] as [string, string][] : []),
+      ...project.specs
+    ]);
+
+    const content = this.templates.render('whitebox', {
+      icon: this.projectIcon(project, 'lg'),
+      repo,
+      download_url: release?.downloadUrl ?? `https://github.com/${repo}/releases/latest`,
+      sums_url: release?.sumsUrl ?? `https://github.com/${repo}/releases/latest`,
+      version,
+      size,
+      size_hidden: size ? '' : ' hidden',
+      specs,
+      github_mark: GITHUB_MARK,
+      base_path: this.config.basePath
+    });
+
+    const html = this.page(content, `Whitebox — free cleaner for Windows`, project.description, '/whitebox/', {
+      og: { slug: 'whitebox', title: 'Whitebox', kicker: 'Free, open-source cleaner for Windows.', icon: project.icon }
+    });
+    this.writeFile(path.join(this.distDir, 'whitebox', 'index.html'), html);
   }
 
   generateProjectsIndex(projects: Project[]): void {
@@ -525,7 +584,7 @@ ${panels}`;
     this.writeFile(path.join(this.distDir, 'feed.xml'), rss);
   }
 
-  generateSitemap(posts: BlogPost[], projects: Project[]): void {
+  generateSitemap(posts: BlogPost[], projects: Project[], extraPaths: string[] = []): void {
     const urls: string[] = [];
 
     // Home
@@ -543,6 +602,9 @@ ${panels}`;
     urls.push(this.sitemapUrl(`${this.config.siteUrl}/projects/`, new Date()));
     urls.push(this.sitemapUrl(`${this.config.siteUrl}/shelf/`, new Date()));
     urls.push(this.sitemapUrl(`${this.config.siteUrl}/uses/`, new Date()));
+    for (const extra of extraPaths) {
+      urls.push(this.sitemapUrl(`${this.config.siteUrl}${extra}`, new Date()));
+    }
 
     // Projects
     for (const project of projects) {

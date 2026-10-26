@@ -899,6 +899,128 @@ a:hover .icon::after {
 }
 
 /* ------------------------------------------------------------------
+   Download page
+   ------------------------------------------------------------------ */
+.product .icon-head {
+  margin-bottom: var(--s-5);
+}
+
+.product__pitch {
+  max-width: 38rem;
+  font-size: var(--t-body);
+  color: var(--soft);
+  text-wrap: pretty;
+}
+
+.download {
+  margin: var(--s-6) 0 var(--s-8);
+}
+
+.download__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-5);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--t-small);
+  font-weight: 600;
+  box-shadow: 0 1px 2px var(--shade);
+  transition:
+    transform 0.45s var(--spring),
+    box-shadow 0.3s var(--ease);
+}
+
+.download__button svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.45s var(--spring);
+}
+
+.download__button:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 8px -2px var(--shade),
+    0 12px 20px -8px var(--shade);
+}
+
+.download__button:hover svg {
+  transform: translateY(2px);
+}
+
+.download__button:focus-visible {
+  border-radius: 999px;
+}
+
+.download__meta {
+  margin-top: var(--s-3);
+}
+
+/* What it does: name over a line of detail, two to a row */
+.features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 var(--s-6);
+  border-top: var(--hair) solid var(--rule);
+}
+
+.features div {
+  padding: var(--s-4) 0;
+  border-bottom: var(--hair) solid var(--rule);
+}
+
+.features dt {
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+
+.features dd {
+  margin-top: var(--s-1);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--quiet);
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-4);
+}
+
+.gallery a {
+  display: block;
+  border-radius: 8px;
+}
+
+.gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: var(--well);
+  box-shadow:
+    0 0 0 var(--hair) var(--edge),
+    0 2px 4px -2px var(--shade),
+    0 12px 24px -16px var(--shade);
+  transition:
+    transform 0.55s var(--spring),
+    box-shadow 0.45s var(--ease);
+}
+
+.gallery a:hover img {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 0 0 var(--hair) var(--edge),
+    0 4px 8px -2px var(--shade),
+    0 24px 40px -20px var(--shade);
+}
+
+.product .specs {
+  margin-top: var(--s-9);
+}
+
+/* ------------------------------------------------------------------
    Prose
    ------------------------------------------------------------------ */
 .prose {
@@ -1482,7 +1604,8 @@ a:hover .icon::after {
     .list > li,
     .shelf-row,
     .links > li,
-    .spec > div {
+    .spec > div,
+    .features > div {
       animation: rise linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 50%;
@@ -1629,6 +1752,19 @@ a:hover .icon::after {
 
   .shot {
     margin-bottom: var(--s-7);
+  }
+
+  .download {
+    margin: var(--s-5) 0 var(--s-7);
+  }
+
+  .features,
+  .gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .product .specs {
+    margin-top: var(--s-8);
   }
 }
 

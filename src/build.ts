@@ -3,7 +3,7 @@ import * as path from 'path';
 import { transform } from 'lightningcss';
 import { TemplateEngine } from './scripts/template';
 import { ContentParser, validateUniquenessSlugs } from './scripts/content';
-import { SiteGenerator, SiteConfig } from './scripts/generator';
+import { SiteGenerator, SiteConfig, Release } from './scripts/generator';
 import { renderOgCards, renderAppIcons } from './scripts/og';
 
 const ROOT_DIR = path.join(__dirname, '..');
@@ -23,6 +23,41 @@ const config: SiteConfig = {
   introSub: 'Some with concrete. Some with code. Others just because I wanted to see if I could.',
   basePath: ''
 };
+
+// Whitebox's download page links the installer from this repo's latest release
+const WHITEBOX_REPO = 'yi00it/whitebox';
+
+// The newest release and its Windows installer. Null when offline or rate
+// limited; the page then links GitHub's latest-release page instead.
+async function fetchLatestRelease(repo: string): Promise<Release | null> {
+  try {
+    const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
+    if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
+      headers,
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!response.ok) throw new Error(`GitHub answered ${response.status}`);
+    const data = await response.json() as {
+      tag_name: string;
+      published_at: string;
+      assets: { name: string; size: number; browser_download_url: string }[];
+    };
+    const installer = data.assets.find(asset => asset.name.endsWith('-setup.exe'))
+      ?? data.assets.find(asset => asset.name.endsWith('.exe'));
+    if (!installer) throw new Error(`no installer in ${data.tag_name}`);
+    return {
+      version: data.tag_name,
+      published: data.published_at,
+      downloadUrl: installer.browser_download_url,
+      size: installer.size,
+      sumsUrl: data.assets.find(asset => asset.name === 'SHA256SUMS.txt')?.browser_download_url
+    };
+  } catch (error) {
+    console.warn(`Could not fetch the latest ${repo} release (${(error as Error).message}); linking the releases page.`);
+    return null;
+  }
+}
 
 function cleanDist(): void {
   if (fs.existsSync(DIST_DIR)) {
@@ -82,6 +117,7 @@ function loadTemplates(templates: TemplateEngine): void {
   templates.loadTemplate('shelf', TEMPLATES_DIR);
   templates.loadTemplate('uses', TEMPLATES_DIR);
   templates.loadTemplate('404', TEMPLATES_DIR);
+  templates.loadTemplate('whitebox', TEMPLATES_DIR);
   templates.loadXMLTemplate('rss', TEMPLATES_DIR);
   templates.loadXMLTemplate('sitemap', TEMPLATES_DIR);
 }
@@ -158,9 +194,16 @@ async function build(): Promise<void> {
     generator.generateUses(uses);
   }
 
+  const extraPaths: string[] = [];
+  const whitebox = projects.find(project => project.slug === 'whitebox');
+  if (whitebox) {
+    generator.generateWhitebox(whitebox, WHITEBOX_REPO, await fetchLatestRelease(WHITEBOX_REPO));
+    extraPaths.push('/whitebox/');
+  }
+
   if (posts.length > 0 || projects.length > 0) {
     generator.generateTagPages(posts, projects);
-    generator.generateSitemap(posts, projects);
+    generator.generateSitemap(posts, projects, extraPaths);
   }
 
   generator.generateNotFound();
