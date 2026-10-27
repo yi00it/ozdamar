@@ -348,14 +348,6 @@ export class SiteGenerator {
   generateWhitebox(project: Project, repo: string, release: Release | null): void {
     const version = release ? `Version ${release.version.replace(/^v/, '')}` : 'Latest release';
     const size = release ? formatSize(release.size) : '';
-    const published = release ? this.formatDate(release.published, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
-    const specs: [string, string][] = [
-      ...(release ? [
-        ['Version', `<span data-release-version>${release.version.replace(/^v/, '')}</span>`],
-        ['Updated', `<span data-release-date>${published}</span>`]
-      ] as [string, string][] : []),
-      ...project.specs
-    ];
     const downloadUrl = release?.downloadUrl ?? `https://github.com/${repo}/releases/latest`;
     const pageUrl = `${this.config.siteUrl}/whitebox/`;
     const title = 'Whitebox — free, open-source PC cleaner for Windows';
@@ -393,8 +385,6 @@ export class SiteGenerator {
       version,
       size,
       size_hidden: size ? '' : ' hidden',
-      specs: specs.map(([key, value]) => `
-        <div><dt>${key}</dt><dd>${value}</dd></div>`).join(''),
       github_mark: GITHUB_MARK,
       site_url: this.config.siteUrl,
       base_path: this.config.basePath

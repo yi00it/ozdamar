@@ -867,33 +867,6 @@ h3 {
   text-underline-offset: 3px;
 }
 
-/* Specs: a two-column sheet */
-.specs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 var(--s-7);
-  margin-top: var(--s-6);
-  border-top: 1px solid var(--rule);
-}
-
-.specs div {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--s-4);
-  padding: var(--s-4) 0;
-  border-bottom: 1px solid var(--rule);
-  font-size: var(--t-small);
-}
-
-.specs dt {
-  color: var(--quiet);
-}
-
-.specs dd {
-  font-weight: 600;
-  text-align: right;
-}
-
 /* Closing call to action */
 .final {
   max-width: var(--wide);
@@ -1096,8 +1069,7 @@ h3 {
 
   .cards,
   .checks,
-  .steps,
-  .specs {
+  .steps {
     grid-template-columns: 1fr;
   }
 

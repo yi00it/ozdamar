@@ -14,7 +14,6 @@
       if (!installer) return;
       var sums = release.assets.filter(function (a) { return a.name === 'SHA256SUMS.txt'; })[0];
       var version = release.tag_name.replace(/^v/, '');
-      var date = new Date(release.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
       function each(selector, fn) {
         Array.prototype.forEach.call(document.querySelectorAll(selector), fn);
@@ -24,7 +23,6 @@
       each('[data-release-version]', function (el) {
         el.textContent = el.getAttribute('data-release-version') + version;
       });
-      each('[data-release-date]', function (el) { el.textContent = date; });
       each('[data-release-size]', function (el) {
         el.textContent = Math.round(installer.size / 1048576) + ' MB';
         el.hidden = false;
