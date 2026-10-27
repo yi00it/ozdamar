@@ -11,9 +11,12 @@ const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const CONTENT_DIR = path.join(ROOT_DIR, 'content');
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const TEMPLATES_DIR = path.join(ROOT_DIR, 'src', 'templates');
-const STYLES_PATH = path.join(ROOT_DIR, 'src', 'styles.css');
 const OUTPUT_CSS_DIR = path.join(DIST_DIR, 'assets');
-const OUTPUT_CSS_PATH = path.join(OUTPUT_CSS_DIR, 'main.css');
+// The site's stylesheet, and the standalone Whitebox page's own
+const STYLESHEETS = [
+  { from: path.join(ROOT_DIR, 'src', 'styles.css'), to: path.join(OUTPUT_CSS_DIR, 'main.css') },
+  { from: path.join(ROOT_DIR, 'src', 'whitebox.css'), to: path.join(OUTPUT_CSS_DIR, 'whitebox.css') }
+];
 
 const config: SiteConfig = {
   siteName: 'Yigit Ozdamar',
@@ -24,7 +27,7 @@ const config: SiteConfig = {
   basePath: ''
 };
 
-// Whitebox's download page links the installer from this repo's latest release
+// Whitebox's product page links the installer from this repo's latest release
 const WHITEBOX_REPO = 'yi00it/whitebox';
 
 // The newest release and its Windows installer. Null when offline or rate
@@ -91,19 +94,21 @@ const CSS_TARGETS = {
   firefox: 120 << 16
 };
 
-// One hand-written stylesheet, minified
+// Hand-written stylesheets, minified
 function buildCSS(): void {
   console.log('Building CSS...');
 
   fs.mkdirSync(OUTPUT_CSS_DIR, { recursive: true });
-  const { code, warnings } = transform({
-    filename: STYLES_PATH,
-    code: fs.readFileSync(STYLES_PATH),
-    minify: true,
-    targets: CSS_TARGETS
-  });
-  for (const warning of warnings) console.warn('CSS:', warning.message);
-  fs.writeFileSync(OUTPUT_CSS_PATH, code);
+  for (const sheet of STYLESHEETS) {
+    const { code, warnings } = transform({
+      filename: sheet.from,
+      code: fs.readFileSync(sheet.from),
+      minify: true,
+      targets: CSS_TARGETS
+    });
+    for (const warning of warnings) console.warn('CSS:', warning.message);
+    fs.writeFileSync(sheet.to, code);
+  }
 }
 
 function loadTemplates(templates: TemplateEngine): void {

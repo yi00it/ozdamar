@@ -177,7 +177,7 @@ export class SiteGenerator {
   private navLinks(pagePath: string): string {
     const sections = [
       { href: '/blog/', label: 'Writing', match: ['/blog/', '/tag/'] },
-      { href: '/projects/', label: 'Projects', match: ['/projects/', '/whitebox/'] },
+      { href: '/projects/', label: 'Projects', match: ['/projects/'] },
       { href: '/shelf/', label: 'Shelf', match: ['/shelf/'] },
       { href: '/uses/', label: 'Uses', match: ['/uses/'] }
     ];
@@ -341,36 +341,63 @@ export class SiteGenerator {
   </section>`;
   }
 
-  // Whitebox's download page at /whitebox/. Without a release (offline build)
-  // the button falls back to GitHub's latest-release page; site.js refreshes
-  // it from the GitHub API either way, so it stays current between deploys.
+  // Whitebox's product page at /whitebox/: a standalone document with its own
+  // stylesheet, outside the site layout. Without a release (offline build)
+  // the buttons fall back to GitHub's latest-release page; whitebox.js
+  // refreshes them from the GitHub API either way.
   generateWhitebox(project: Project, repo: string, release: Release | null): void {
     const version = release ? `Version ${release.version.replace(/^v/, '')}` : 'Latest release';
     const size = release ? formatSize(release.size) : '';
     const published = release ? this.formatDate(release.published, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
-    const specs = this.specSheet([
+    const specs: [string, string][] = [
       ...(release ? [
         ['Version', `<span data-release-version>${release.version.replace(/^v/, '')}</span>`],
         ['Updated', `<span data-release-date>${published}</span>`]
       ] as [string, string][] : []),
       ...project.specs
-    ]);
+    ];
+    const downloadUrl = release?.downloadUrl ?? `https://github.com/${repo}/releases/latest`;
+    const pageUrl = `${this.config.siteUrl}/whitebox/`;
+    const title = 'Whitebox — free, open-source PC cleaner for Windows';
+    const description = 'Whitebox is a free, open-source cleaner and performance toolkit for Windows 10 and 11. Clean junk, find large files and duplicates, manage startup apps. No ads, no accounts, no telemetry.';
 
-    const content = this.templates.render('whitebox', {
-      icon: this.projectIcon(project, 'lg'),
+    const og: OgCard = { slug: 'whitebox', title: 'Whitebox', kicker: 'Free, open-source cleaner for Windows.', icon: project.icon };
+    if (!this.ogCards.some(card => card.slug === og.slug)) this.ogCards.push(og);
+
+    // Lets search engines show it as an app: free, Windows, with a download
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'Whitebox',
+      description,
+      url: pageUrl,
+      image: `${this.config.siteUrl}/og/whitebox.png`,
+      applicationCategory: 'UtilitiesApplication',
+      operatingSystem: 'Windows 10, Windows 11',
+      downloadUrl,
+      ...(release ? { softwareVersion: release.version.replace(/^v/, '') } : {}),
+      license: 'https://opensource.org/licenses/MIT',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      author: { '@type': 'Person', name: this.config.siteName, url: this.config.siteUrl }
+    };
+
+    const html = this.templates.render('whitebox', {
+      page_title: title,
+      page_description: description,
+      page_url: pageUrl,
+      og_image: `${this.config.siteUrl}/og/${og.slug}.png`,
+      json_ld: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
       repo,
-      download_url: release?.downloadUrl ?? `https://github.com/${repo}/releases/latest`,
+      download_url: downloadUrl,
       sums_url: release?.sumsUrl ?? `https://github.com/${repo}/releases/latest`,
       version,
       size,
       size_hidden: size ? '' : ' hidden',
-      specs,
+      specs: specs.map(([key, value]) => `
+        <div><dt>${key}</dt><dd>${value}</dd></div>`).join(''),
       github_mark: GITHUB_MARK,
+      site_url: this.config.siteUrl,
       base_path: this.config.basePath
-    });
-
-    const html = this.page(content, `Whitebox — free cleaner for Windows`, project.description, '/whitebox/', {
-      og: { slug: 'whitebox', title: 'Whitebox', kicker: 'Free, open-source cleaner for Windows.', icon: project.icon }
     });
     this.writeFile(path.join(this.distDir, 'whitebox', 'index.html'), html);
   }
